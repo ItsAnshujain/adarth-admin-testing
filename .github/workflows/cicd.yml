@@ -31,11 +31,11 @@ jobs:
     needs: build
     runs-on: self-hosted
     steps:
-      - name: Pull image from docker hub
-        run: docker pull anshujain24/adarth-admin-dev:latest 
-        
+      - name: Pull image from Docker Hub
+        run: sudo docker pull anshujain24/adarth-admin-dev:latest
+      
       - name: Delete old container
-        run: docker rm -f adarth-admin-container || true 
-        
-      - name: Run docker container
-        run: docker run -d -p 5173:4173 --name adarth-admin-container anshujain24/adarth-admin-dev:latest
+        run: sudo docker rm -f adarth-admin-container || true
+      
+      - name: Run Docker container
+        run: sudo docker run -d -p 5173:4173 --name adarth-admin-container anshujain24/adarth-admin-dev:latest
