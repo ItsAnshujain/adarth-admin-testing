@@ -31,8 +31,6 @@ const OtherNewReports = () => {
 
   const handleDownloadPdf = async () => {
     const activeUrl = new URL(window.location.href);
-    activeUrl.searchParams.append('share', 'report');
-
     await mutateAsyncPdf(
       { url: activeUrl.toString() },
       {
