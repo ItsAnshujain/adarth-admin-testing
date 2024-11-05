@@ -117,21 +117,24 @@ const RevenueDistribution = () => {
     const fiscalYearStart = new Date(currentYear, fiscalStartMonth, 1);
     const fiscalYearEnd = new Date(currentYear + 1, fiscalStartMonth - 1, 31);
 
+    // Initialize groupedData with default values for all expected properties
+    const initialGroupedData = {
+      past10Years: {},
+      past5Years: {},
+      previousYear: {},
+      currentYear: {},
+      quarter: { Q1: 0, Q2: 0, Q3: 0, Q4: 0 }, // Initialize quarters
+      currentMonth: {},
+      past7: {},
+      customDate: {},
+    };
+
     const groupedData = bookingData.docs.reduce((acc, booking) => {
       const date = new Date(booking.createdAt);
       const year = date.getFullYear();
       const month = date.getMonth(); // Month is 0-indexed
-      const day = date.getDate();
       const revenue = parseFloat(booking.totalAmount) || 0;
 
-      if (!acc.past10Years) acc.past10Years = {};
-      if (!acc.past5Years) acc.past5Years = {};
-      if (!acc.previousYear) acc.previousYear = {};
-      if (!acc.currentYear) acc.currentYear = {};
-      if (!acc.quarter) acc.quarter = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 };
-      if (!acc.currentMonth) acc.currentMonth = acc.currentMonth || {};
-      if (!acc.past7) acc.past7 = acc.past7 || {};
-      if (!acc.customDate) acc.customDate = acc.customDate || {};
       // Calculate fiscal year months
       const fiscalMonth = (month + 12 - fiscalStartMonth) % 12;
 
@@ -186,17 +189,18 @@ const RevenueDistribution = () => {
       }
 
       return acc;
-    }, {});
+    }, initialGroupedData);
 
     // Ensure past10Years and past5Years are populated properly
+    // Ensure past10Years and past5Years are populated properly with defaults
     groupedData.past10Years = past10YearsRange.map(year => ({
       year,
-      revenue: groupedData.past10Years[year] || 0,
+      revenue: groupedData.past10Years?.[year] || 0, // Use optional chaining and provide default 0
     }));
 
     groupedData.past5Years = past5YearsRange.map(year => ({
       year,
-      revenue: groupedData.past5Years[year] || 0,
+      revenue: groupedData.past5Years?.[year] || 0, // Use optional chaining and provide default 0
     }));
 
     // Sort and map previousYear and currentYear data
@@ -249,24 +253,21 @@ const RevenueDistribution = () => {
     // Default to 'currentYear' if no valid filter is set
     let selectedData = transformedData[filter] || transformedData.currentYear || [];
 
-    // Format the selected data based on the filter
     const filteredData = selectedData.map(d => ({
       ...d,
       revenue: d.revenue > 0 ? d.revenue / 100000 : 0,
     }));
 
-    // If filter is 'customDate', ensure data is sorted by date
     if (filter === 'customDate') {
       filteredData.sort((a, b) => new Date(a.day) - new Date(b.day));
     }
 
-    // Return the chart data
     return {
-      labels: filteredData.map(d => d.year || d.month || d.quarter || d.day),
+      labels: filteredData.map(d => d.year || d.month || d.quarter || d.day || 'Unknown'),
       datasets: [
         {
           label: 'Revenue (in Lacs)',
-          data: filteredData.map(d => d.revenue),
+          data: filteredData.map(d => d.revenue || 0), // Use a default value of 0 for missing data
           borderColor: 'rgba(75, 192, 192, 1)',
           backgroundColor: 'rgba(75, 192, 192, 0.2)',
           tension: 0.1,
@@ -390,11 +391,10 @@ const RevenueDistribution = () => {
       </Menu>
 
       {filter && !isReport && (
-  <Button onClick={handleReset} className="mx-2 secondary-button">
-    Reset
-  </Button>
-)}
-
+        <Button onClick={handleReset} className="mx-2 secondary-button">
+          Reset
+        </Button>
+      )}
 
       {filter === 'customDate' && (
         <div className="flex flex-col items-start space-y-4 py-2 ">
@@ -402,7 +402,7 @@ const RevenueDistribution = () => {
         </div>
       )}
 
-      <div className={classNames('my-4', isReport?'w-32':'')}>
+      <div className={classNames('my-4', isReport ? 'w-32' : '')}>
         <Line
           data={chartData1}
           options={chartOptions1}

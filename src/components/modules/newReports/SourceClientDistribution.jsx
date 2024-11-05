@@ -94,7 +94,10 @@ const barDataConfigByClient = {
       },
       datalabels: {
         formatter: value => {
-          return value >= 1 ? Math.floor(value) : value.toFixed(1);
+          if (typeof value === 'number') {
+            return value >= 1 ? Math.floor(value) : value.toFixed(1);
+          }
+          return '0'; // Default or fallback for non-numeric values
         },
         color: '#000',
         anchor: 'end',
@@ -185,7 +188,10 @@ const SourceClientDistribution = () => {
         },
         datalabels: {
           formatter: value => {
-            return value >= 1 ? Math.floor(value) : value.toFixed(1);
+            if (typeof value === 'number') {
+              return value >= 1 ? Math.floor(value) : value.toFixed(1);
+            }
+            return '0'; // Default or fallback for non-numeric values
           },
           color: '#000',
           anchor: 'end',
