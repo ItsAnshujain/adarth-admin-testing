@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react';
-import { Line } from 'react-chartjs-2';
 import dayjs from 'dayjs';
 import { useSearchParams } from 'react-router-dom';
-import { Menu, Button, MultiSelect, Text } from '@mantine/core';
+import { Menu, Button } from '@mantine/core';
 import DateRangeSelector from '../../../components/DateRangeSelector';
-import { useDistinctAdditionalTags, useFetchInventory } from '../../../apis/queries/inventory.queries';
+import { useFetchInventory } from '../../../apis/queries/inventory.queries';
 import classNames from 'classnames';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
@@ -21,13 +20,14 @@ import {
   Title,
   LogarithmicScale,
 } from 'chart.js';
-import { useBookings, useBookingsNew } from '../../../apis/queries/booking.queries';
-import Table from '../../Table/Table';
+import { useBookings } from '../../../apis/queries/booking.queries';
 import GaugeChart from './GaugeChart';
 import InvoiceReportChart from './InvoiceReportChart';
 import { generateSlNo } from '../../../utils';
 import toIndianCurrency from '../../../utils/currencyFormat';
 import Table1 from '../../Table/Table1';
+import { Download } from 'react-feather';
+import html2pdf from 'html2pdf.js';
 
 ChartJS.register(
   ArcElement,
@@ -40,28 +40,7 @@ ChartJS.register(
   Title,
   LogarithmicScale,
 );
-const viewBy = {
-  reset: '',
-  past10Years: 'Past 10 Years',
-  past5Years: 'Past 5 Years',
-  previousYear: 'Previous Year',
-  currentYear: 'Current Year',
-  quarter: 'Quarterly',
-  currentMonth: 'Current Month',
-  past7: 'Past 7 Days',
-  customDate: 'Custom Date Range',
-};
 
-const list = [
-  { label: 'Past 10 Years', value: 'past10Years' },
-  { label: 'Past 5 Years', value: 'past5Years' },
-  { label: 'Previous Year', value: 'previousYear' },
-  { label: 'Current Year', value: 'currentYear' },
-  { label: 'Quarterly', value: 'quarter' },
-  { label: 'Current Month', value: 'currentMonth' },
-  { label: 'Past 7 Days', value: 'past7' },
-  { label: 'Custom Date Range', value: 'customDate' },
-];
 const viewBy1 = {
   reset: '',
   past10Years: 'Past 10 Years',
@@ -87,18 +66,9 @@ const InvoiceAmountCollReport = () => {
   });
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
-  const [searchParams3, setSearchParams3] = useSearchParams({
-    page: 1,
-    limit: 500,
-    sortBy: 'basicInformation.spaceName',
-    sortOrder: 'desc',
-    isActive: true,
-  });
+
   const { data: bookingData, isLoading: isLoadingBookingData } = useBookings(
     searchParams.toString(),
-  );
-  const { data: inventoryData, isLoading: isLoadingInventoryData } = useFetchInventory(
-    searchParams3.toString(),
   );
   const [startDate2, setStartDate2] = useState(null);
   const [endDate2, setEndDate2] = useState(null);
@@ -107,18 +77,16 @@ const InvoiceAmountCollReport = () => {
   threeMonthsAgo.setMonth(today.getMonth() - 3);
   const [activeView1, setActiveView1] = useState('currentYear');
 
-  const formatMonthYear1 = date => {
-    const newDate = new Date(date);
-    const month = newDate.toLocaleString('default', { month: 'short' });
-    const year = newDate.getFullYear();
-    const financialYear = newDate.getMonth() + 1 >= 4 ? year : year - 1; // Financial year logic
-
-    return `${month} ${financialYear}`;
-  };
+  const formatMonthYear1 = (monthYearKey) => {
+    const [year, month] = monthYearKey.split('-').map(Number);
+    const monthName = new Date(year, month - 1).toLocaleString('default', { month: 'short' });
+    
+    return `${monthName} ${year}`;
+};
 
   const getFinancialYear = date => {
     const year = date.getFullYear();
-    const month = date.getMonth() + 1; // Months are 0-indexed
+    const month = date.getMonth() + 1;
 
     // Financial year starts in April
     if (month >= 4) {
@@ -139,9 +107,11 @@ const InvoiceAmountCollReport = () => {
     switch (view) {
       case 'past10Years':
         startDate = new Date(currentFYStartYear - 10, 3, 1);
+        endDate = new Date(currentFYStartYear, 2, 31);
         break;
       case 'past5Years':
         startDate = new Date(currentFYStartYear - 5, 3, 1);
+        endDate = new Date(currentFYStartYear, 2, 31);
         break;
       case 'previousYear':
         startDate = new Date(currentFYStartYear - 1, 3, 1);
@@ -274,16 +244,50 @@ const InvoiceAmountCollReport = () => {
   const isFilterApplied = activeView1 !== '';
 
   // invoice report
+  const [isDownloadPdfLoading, setIsDownloadPdfLoading] = useState(false);
 
+  const handleDownloadPdf = () => {
+    setIsDownloadPdfLoading(true);
+
+    const url = new URL(window.location);
+    url.searchParams.set('share', 'report');
+    window.history.pushState({}, '', url);
+
+    const element = document.getElementById('invoice_report');
+
+    html2pdf()
+      .set({ filename: 'InvoiceReport.pdf', html2canvas: { scale: 2 } })
+      .from(element)
+      .save()
+      .finally(() => {
+        setIsDownloadPdfLoading(false);
+        url.searchParams.delete('share');
+        window.history.pushState({}, '', url);
+      });
+  };
   return (
-    <div className="col-span-12 md:col-span-12 lg:col-span-10 p-5 overflow-hidden" id="invoice_report">
-      <p className="font-bold ">Invoice and amount collected Report</p>
+    <div className="col-span-12 lg:col-span-10 p-5 overflow-hidden" id="invoice_report">
+      <div className="flex justify-between">
+        <p className="font-bold ">Invoice and amount collected Report</p>
+        {isReport ? null : (
+          <div className=" ">
+            <Button
+              className="primary-button mx-3 pdf_download_button"
+              onClick={handleDownloadPdf}
+              loading={isDownloadPdfLoading}
+              disabled={isDownloadPdfLoading}
+            >
+              <Download size="20" color="white" />
+            </Button>
+          </div>
+        )}
+      </div>
       <p className="text-sm text-gray-600 italic py-4">
         This report provide insights into the invoice raised, amount collected and outstanding by
         table, graph and chart.
       </p>
       <div className="flex py-4">
-        <div >
+        <div>
           <Menu shadow="md" width={200}>
             <Menu.Target>
               <Button className="secondary-button">
@@ -304,15 +308,17 @@ const InvoiceAmountCollReport = () => {
           </Menu>
         </div>
 
-        {activeView1 && !isReport &&  (
+        {activeView1 && !isReport && (
           <Button onClick={handleReset1} className="mx-2 secondary-button">
             Reset
           </Button>
         )}
-        <div>
-          {' '}
-          <p className="text-sm text-gray-600 italic ml-[450px]"> (Amounts in Lacs)</p>
-        </div>
+        {
+          <div>
+            {' '}
+            <p className="text-sm text-gray-600 italic ml-[450px]"> (Amounts in Lacs)</p>
+          </div>
+        }
       </div>
       {activeView1 === 'customDate' && (
         <div className="flex flex-col items-start space-y-4 py-2 ">
@@ -329,7 +335,7 @@ const InvoiceAmountCollReport = () => {
           <Table1
             data={groupedData1 || []}
             COLUMNS={column1}
-            loading={isLoadingInventoryData}
+            loading={isLoadingBookingData}
             showPagination={false}
           />
         </div>
@@ -342,11 +348,12 @@ const InvoiceAmountCollReport = () => {
           />
         </div>
       </div>
-      <div className="flex flex-col items-center">
+      <div className={classNames('flex flex-col ', !isReport ? 'items-center' : '')}>
         <p className="py-10 font-bold">Invoice Raised Vs Amount Collected Vs Outstanding</p>
         <InvoiceReportChart
           data={activeView1 ? groupedData1 : []}
           chartDataLabels={[ChartDataLabels]}
+          isReport={isReport}
         />{' '}
       </div>
     </div>

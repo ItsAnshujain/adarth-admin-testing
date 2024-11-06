@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import dayjs from 'dayjs';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
@@ -18,7 +18,9 @@ import {
   LogarithmicScale,
 } from 'chart.js';
 import { useFetchOperationalCostData } from '../../../apis/queries/operationalCost.queries';
-import { Loader } from 'react-feather';
+import { Download, Loader } from 'react-feather';
+import { Button } from '@mantine/core';
+import html2pdf from 'html2pdf.js';
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -164,10 +166,48 @@ const PrintingMountingCosts = () => {
       cutout: '65%',
     },
   };
+  const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
+  //For Pdf Download
+
+  const [isDownloadPdfLoading, setIsDownloadPdfLoading] = useState(false);
+
+  const handleDownloadPdf = () => {
+    setIsDownloadPdfLoading(true);
+
+    const url = new URL(window.location);
+    url.searchParams.set('share', 'report');
+    window.history.pushState({}, '', url);
+
+    const element = document.getElementById('printingMounting_cards');
+
+    html2pdf()
+      .set({ filename: 'PrintingMountingReport.pdf', html2canvas: { scale: 2 } })
+      .from(element)
+      .save()
+      .finally(() => {
+        setIsDownloadPdfLoading(false);
+        url.searchParams.delete('share');
+        window.history.pushState({}, '', url);
+      });
+  };
   return (
     <div className="px-5" id='printingMounting_cards'>
       <div className="mb-4 flex flex-col">
+        <div className='flex justify-between'>
         <p className="font-bold">Printing & Mounting Costs</p>
+        {isReport ? null : (
+            <div className=" ">
+              <Button
+                className="primary-button mx-3 pdf_download_button"
+                onClick={handleDownloadPdf}
+                loading={isDownloadPdfLoading}
+                disabled={isDownloadPdfLoading}
+              >
+                <Download size="20" color="white" />
+              </Button>
+            </div>
+          )}
+          </div>
         <p className="text-sm text-gray-600 italic py-4">
           This chart compares costs for printing, mounting, reprinting, and remounting activities.
         </p>

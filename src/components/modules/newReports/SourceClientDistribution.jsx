@@ -94,10 +94,7 @@ const barDataConfigByClient = {
       },
       datalabels: {
         formatter: value => {
-          if (typeof value === 'number') {
-            return value >= 1 ? Math.floor(value) : value.toFixed(1);
-          }
-          return '0'; // Default or fallback for non-numeric values
+          return value >= 1 ? Math.floor(value) : value.toFixed(1);
         },
         color: '#000',
         anchor: 'end',
@@ -122,7 +119,6 @@ const SourceClientDistribution = () => {
     sortOrder: 'desc',
   });
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
-
 
   const chartRef = useRef(null);
 
@@ -188,10 +184,11 @@ const SourceClientDistribution = () => {
         },
         datalabels: {
           formatter: value => {
-            if (typeof value === 'number') {
-              return value >= 1 ? Math.floor(value) : value.toFixed(1);
+            const numericValue = Number(value); // Convert to number
+            if (!isNaN(numericValue)) {
+              return numericValue >= 1 ? Math.floor(numericValue) : numericValue.toFixed(1);
             }
-            return '0'; // Default or fallback for non-numeric values
+            return ''; // Return empty string if conversion fails
           },
           color: '#000',
           anchor: 'end',
@@ -263,7 +260,7 @@ const SourceClientDistribution = () => {
     }
   }, [pieChartData, bookingData]);
   return (
-    <div className={classNames('flex',  isReport ? 'flex-col pt-20' : 'flex-row')}>
+    <div className={classNames('flex', isReport ? 'flex-col pt-20' : 'flex-row')}>
       <div className="flex flex-col mt-2 p-4  min-h-[200px]">
         <p className="font-bold">Source Distribution</p>
         <p className="text-sm text-gray-600 italic py-4">

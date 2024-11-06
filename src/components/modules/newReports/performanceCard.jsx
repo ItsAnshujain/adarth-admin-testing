@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { Text, Image } from '@mantine/core';
+import { useEffect, useState } from 'react';
+import { Text, Image, Button } from '@mantine/core';
 import { useSearchParams } from 'react-router-dom';
 import toIndianCurrency from '../../../utils/currencyFormat';
 import { useFetchInventoryReportList } from '../../../apis/queries/inventory.queries';
@@ -7,6 +7,9 @@ import OngoingOrdersIcon from '../../../assets/ongoing-orders.svg';
 import TotalRevenueIcon from '../../../assets/total-revenue.svg';
 import InitiateDiscussionIcon from '../../../assets/message-share.svg';
 import InProgressIcon from '../../../assets/git-branch.svg';
+import classNames from 'classnames';
+import html2pdf from 'html2pdf.js';
+import { Download } from 'react-feather';
 const PerformanceCard = () => {
   const fixedSearchParams = new URLSearchParams({
     limit: 10000,
@@ -76,25 +79,77 @@ const PerformanceCard = () => {
       },
     },
   ];
+  const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
+  const [isDownloadPdfLoading, setIsDownloadPdfLoading] = useState(false);
+
+  const handleDownloadPdf = () => {
+    setIsDownloadPdfLoading(true);
+
+    const url = new URL(window.location);
+    url.searchParams.set('share', 'report');
+    window.history.pushState({}, '', url);
+
+    const element = document.getElementById('PerformanceCards');
+
+    html2pdf()
+      .set({ filename: 'PerformanceCardsReport.pdf', html2canvas: { scale: 2 } })
+      .from(element)
+      .save()
+      .finally(() => {
+        setIsDownloadPdfLoading(false);
+        url.searchParams.delete('share');
+        window.history.pushState({}, '', url);
+      });
+  };
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 my-6" id="PerformanceCards">
-      {cardData.map(({ title, data }) => (
-        <div className="border rounded p-8 flex-1" key={title}>
-          <Image src={data.icon} alt="icon" height={24} width={24} fit="contain" />
-          <Text className="my-2 text-sm font-semibold ">{title}</Text>
-          <Text size="sm" weight="200">
-            {data.name}
-          </Text>
-          <Text size="sm" weight="200">
-            {data.label}:{' '}
-            <span className="font-bold" style={{ color: data.color }}>
-              {' '}
-              {data.value}
-            </span>
-          </Text>
-        </div>
-      ))}
+    <div
+      className={classNames(
+        'px-5 lg:col-span-10 col-span-12',
+        !isReport ? '' : ' pt-5',
+      )}
+      id="PerformanceCards"
+    >
+      <div className="flex justify-between">
+        <p className="font-bold">Performance Ranking Report</p>
+        {isReport ? null : (
+          <div className=" ">
+            <Button
+              className="primary-button mx-3 pdf_download_button"
+              onClick={handleDownloadPdf}
+              loading={isDownloadPdfLoading}
+              disabled={isDownloadPdfLoading}
+            >
+              <Download size="20" color="white" />
+            </Button>
+          </div>
+        )}
+      </div>
+      <p className="text-sm text-gray-600 italic py-4">
+        This report shows Performance Cards with pagination controls and a sortable, paginated
+        table.
+      </p>
+      <div
+        className={classNames('grid grid-cols-1 lg:grid-cols-4 gap-4')}
+        
+      >
+        {cardData.map(({ title, data }) => (
+          <div className="border rounded p-8 flex-1" key={title}>
+            <Image src={data.icon} alt="icon" height={24} width={24} fit="contain" />
+            <Text className="my-2 text-sm font-semibold ">{title}</Text>
+            <Text size="sm" weight="200">
+              {data.name}
+            </Text>
+            <Text size="sm" weight="200">
+              {data.label}:{' '}
+              <span className="font-bold" style={{ color: data.color }}>
+                {' '}
+                {data.value}
+              </span>
+            </Text>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

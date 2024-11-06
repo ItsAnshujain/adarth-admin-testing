@@ -1,15 +1,13 @@
 import { useMemo, useState } from 'react';
-import { Line } from 'react-chartjs-2';
-import dayjs from 'dayjs';
 import { useSearchParams } from 'react-router-dom';
-import { Menu, Button, MultiSelect, Text } from '@mantine/core';
-import DateRangeSelector from '../../../components/DateRangeSelector';
 import {
-  useDistinctAdditionalTags,
   useFetchInventory,
 } from '../../../apis/queries/inventory.queries';
-import { generateSlNo, serialize } from '../../../utils';
+import { generateSlNo } from '../../../utils';
 import Table1 from '../../Table/Table1';
+import html2pdf from 'html2pdf.js';
+import { Button } from '@mantine/core';
+import { Download } from 'react-feather';
 
 const PriceTradedMargin = () => {
   const [searchParams3, setSearchParams3] = useSearchParams({
@@ -119,9 +117,48 @@ const PriceTradedMargin = () => {
   );
 
   // traded margin report
+
+  const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
+  //For Pdf Download
+
+  const [isDownloadPdfLoading, setIsDownloadPdfLoading] = useState(false);
+
+  const handleDownloadPdf = () => {
+    setIsDownloadPdfLoading(true);
+
+    const url = new URL(window.location);
+    url.searchParams.set('share', 'report');
+    window.history.pushState({}, '', url);
+
+    const element = document.getElementById('TradedMargin_report');
+
+    html2pdf()
+      .set({ filename: 'TradedMarginReport.pdf', html2canvas: { scale: 2 } })
+      .from(element)
+      .save()
+      .finally(() => {
+        setIsDownloadPdfLoading(false);
+        url.searchParams.delete('share');
+        window.history.pushState({}, '', url);
+      });
+  };
   return (
     <div className="col-span-12 md:col-span-12 lg:col-span-10 overflow-y-auto p-5" id="TradedMargin_report">
+      <div className='flex justify-between'>
       <p className="font-bold">Price and Traded Margin Report</p>
+      {isReport ? null : (
+            <div className=" ">
+              <Button
+                className="primary-button mx-3 pdf_download_button"
+                onClick={handleDownloadPdf}
+                loading={isDownloadPdfLoading}
+                disabled={isDownloadPdfLoading}
+              >
+                <Download size="20" color="white" />
+              </Button>
+            </div>
+          )}
+          </div>
       <p className="text-sm text-gray-600 italic py-4">
         This report provide insights into the pricing trends, traded prices, and margins grouped by
         cities. (Amounts in Lacs)

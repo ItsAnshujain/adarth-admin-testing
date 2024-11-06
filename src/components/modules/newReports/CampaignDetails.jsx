@@ -14,6 +14,8 @@ import { Link } from 'react-router-dom';
 import toIndianCurrency from '../../../utils/currencyFormat';
 import { DATE_FORMAT } from '../../../utils/constants';
 import Table1 from '../../Table/Table1';
+import { Download } from 'react-feather';
+import html2pdf from 'html2pdf.js';
 
 const CampaignDetails = () => {
   const [searchParams] = useSearchParams({
@@ -182,15 +184,50 @@ const CampaignDetails = () => {
   }, [bookingData?.docs]);
 
   // existing campagin details
+  const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
+  //For Pdf Download
 
+  const [isDownloadPdfLoading, setIsDownloadPdfLoading] = useState(false);
+
+  const handleDownloadPdf = () => {
+    setIsDownloadPdfLoading(true);
+
+    const url = new URL(window.location);
+    url.searchParams.set('share', 'report');
+    window.history.pushState({}, '', url);
+
+    const element = document.getElementById('Campaign_details');
+
+    html2pdf()
+      .set({ filename: 'Campaign_detailsReport.pdf', html2canvas: { scale: 2 } })
+      .from(element)
+      .save()
+      .finally(() => {
+        setIsDownloadPdfLoading(false);
+        url.searchParams.delete('share');
+        window.history.pushState({}, '', url);
+      });
+  };
   return (
     <div id='Campaign_details'>
       <div className="flex flex-col overflow-hidden px-5">
-        <div className="py-6 w-[50rem]">
+        <div className="py-6 flex justify-between">
           <p className="font-bold ">Campaign Details</p>
+          {isReport ? null : (
+            <div className=" ">
+              <Button
+                className="primary-button mx-3 pdf_download_button"
+                onClick={handleDownloadPdf}
+                loading={isDownloadPdfLoading}
+                disabled={isDownloadPdfLoading}
+              >
+                <Download size="20" color="white" />
+              </Button>
+            </div>
+          )}
         </div>
       </div>
-      <div className="px-5 col-span-12 md:col-span-12 lg:col-span-10 border-gray-450  overflow-auto">
+      <div className={classNames("px-5 col-span-12 md:col-span-12 lg:col-span-10 border-gray-450  overflow-auto", !isReport?'':'h-[360px]')}>
         <Table1
           data={sortedBookingData} // Use manually sorted data
           COLUMNS={column5}

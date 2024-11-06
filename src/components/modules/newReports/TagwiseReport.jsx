@@ -24,6 +24,8 @@ import {
 import { useBookingsNew } from '../../../apis/queries/booking.queries';
 import Table from '../../Table/Table';
 import Table1 from '../../Table/Table1';
+import { Download } from 'react-feather';
+import html2pdf from 'html2pdf.js';
 
 ChartJS.register(
   ArcElement,
@@ -83,7 +85,7 @@ const TagwiseReport = () => {
   const chartRef = useRef(null); // Reference to the chart instance
 
   const additionalTagsQuery = useDistinctAdditionalTags();
-  const [selectedTags, setSelectedTags] = useState(['BMR', 'ASTC']);
+  const [selectedTags, setSelectedTags] = useState(['BMR']);
   const [startDate1, setStartDate1] = useState(null);
   const [endDate1, setEndDate1] = useState(null);
   const [filter3, setFilter3] = useState('currentYear');
@@ -141,7 +143,6 @@ const TagwiseReport = () => {
         const day = date.getDate();
         const formattedDate = `${month + 1}/${day}`; // Ensure it matches the format used in the table
 
-
         const revenue = booking.totalAmount;
 
         selectedTags.forEach(tag => {
@@ -167,9 +168,10 @@ const TagwiseReport = () => {
             timeUnit = date.toLocaleString('default', { month: 'short' });
           } else if (filter3 === 'currentMonth' && year === currentYear && month === currentMonth) {
             timeUnit = day;
-          } else if (filter3 === 'past7' && past7DaysRange.includes(formattedDate)) { // Adjusted here
+          } else if (filter3 === 'past7' && past7DaysRange.includes(formattedDate)) {
+            // Adjusted here
             timeUnit = formattedDate;
-          }else if (
+          } else if (
             filter3 === 'customDate' &&
             startDate1 &&
             endDate1 &&
@@ -361,7 +363,7 @@ const TagwiseReport = () => {
         return `${date.getMonth() + 1}/${date.getDate()}`; // Ensure format is MM/DD
       }).reverse();
       timeUnits = past7Days;
-    }  else if (filter3 === 'customDate' && startDate1 && endDate1) {
+    } else if (filter3 === 'customDate' && startDate1 && endDate1) {
       const customRangeDates = [];
       let currentDate = new Date(startDate1);
       while (currentDate <= new Date(endDate1)) {
@@ -474,30 +476,29 @@ const TagwiseReport = () => {
         });
       });
     } else if (filter3 === 'customDate') {
-  const customRangeDates = [];
-  let currentDate = new Date(startDate1);
-  
-  while (currentDate <= new Date(endDate1)) {
-    // Format the date to 'MM/DD' format
-    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // Ensure MM format
-    const day = currentDate.getDate().toString().padStart(2, '0'); // Ensure DD format
-    const formattedDate = `${month}/${day}`; // Format as MM/DD
-    customRangeDates.push(formattedDate);
-    
-    // Move to the next day
-    currentDate.setDate(currentDate.getDate() + 1);
-  }
-  
-  // Create dynamic columns with the formatted dates
-  customRangeDates.forEach(date => {
-    dynamicColumns.push({
-      Header: date, // This will show as the header in the table
-      accessor: date, // This should match how you reference the data
-      disableSortBy: true,
-    });
-  });
-}
-else if (filter3 === 'quarter') {
+      const customRangeDates = [];
+      let currentDate = new Date(startDate1);
+
+      while (currentDate <= new Date(endDate1)) {
+        // Format the date to 'MM/DD' format
+        const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // Ensure MM format
+        const day = currentDate.getDate().toString().padStart(2, '0'); // Ensure DD format
+        const formattedDate = `${month}/${day}`; // Format as MM/DD
+        customRangeDates.push(formattedDate);
+
+        // Move to the next day
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+
+      // Create dynamic columns with the formatted dates
+      customRangeDates.forEach(date => {
+        dynamicColumns.push({
+          Header: date, // This will show as the header in the table
+          accessor: date, // This should match how you reference the data
+          disableSortBy: true,
+        });
+      });
+    } else if (filter3 === 'quarter') {
       const quarters = ['First Quarter', 'Second Quarter', 'Third Quarter', 'Fourth Quarter'];
       quarters.forEach(quarter => {
         dynamicColumns.push({
@@ -752,7 +753,7 @@ else if (filter3 === 'quarter') {
     setActiveView5('revenue');
     setStartDate1(null);
     setEndDate1(null);
-    setSelectedTags(['BMR', 'ASTC']);
+    setSelectedTags(['BMR']);
   };
 
   const handleMenuItemClick3 = value => {
@@ -948,14 +949,50 @@ else if (filter3 === 'quarter') {
   }, [filter3, currentYear, startDate1, endDate1]);
   // tagwise report
 
+  //For Pdf Download
+  const [isDownloadPdfLoading, setIsDownloadPdfLoading] = useState(false);
+
+  const handleDownloadPdf = () => {
+    setIsDownloadPdfLoading(true);
+
+    const url = new URL(window.location);
+    url.searchParams.set('share', 'report');
+    window.history.pushState({}, '', url);
+
+    const element = document.getElementById('Tagfilter_distribution');
+
+    html2pdf()
+      .set({ filename: 'AdditionalFilterReport.pdf', html2canvas: { scale: 2 } })
+      .from(element)
+      .save()
+      .finally(() => {
+        setIsDownloadPdfLoading(false);
+        url.searchParams.delete('share');
+        window.history.pushState({}, '', url);
+      });
+  };
   return (
     <div
       className="col-span-12 lg:col-span-10 border-gray-450 overflow-y-auto"
       id="Tagfilter_distribution"
     >
-      <div className="p-5 w-[50rem]">
-        <p className="font-bold "> Additional Filter Distribution</p>
-        <p className="text-sm text-gray-600 italic py-4">
+      <div className="px-5 pt-5 w-[47rem]">
+        <div className="flex justify-between">
+          <p className="font-bold "> Additional Filter Distribution</p>
+          {isReport ? null : (
+            <div className=" ">
+              <Button
+                className="primary-button mx-3 pdf_download_button"
+                onClick={handleDownloadPdf}
+                loading={isDownloadPdfLoading}
+                disabled={isDownloadPdfLoading}
+              >
+                <Download size="20" color="white" />
+              </Button>
+            </div>
+          )}
+        </div>
+        <p className="text-sm text-gray-600 italic py-4 pb-6">
           This line chart displays the{' '}
           {activeView5 === 'revenue' ? 'revenue trends' : 'profitability'} over different time
           periods, filtered by specific tags.

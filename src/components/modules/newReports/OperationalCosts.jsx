@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, useEffect } from 'react';
-import {  Doughnut } from 'react-chartjs-2';
+import { Doughnut } from 'react-chartjs-2';
 import dayjs from 'dayjs';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
@@ -21,6 +21,9 @@ import {
 import { useFetchOperationalCostData } from '../../../apis/queries/operationalCost.queries';
 import { useFetchMasters } from '../../../apis/queries/masters.queries';
 import { serialize } from '../../../utils';
+import { Download } from 'react-feather';
+import { Button } from '@mantine/core';
+import html2pdf from 'html2pdf.js';
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -187,25 +190,63 @@ const OperationalCosts = () => {
     cutout: '65%',
     events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
   };
+  const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
+  //For Pdf Download
+
+  const [isDownloadPdfLoading, setIsDownloadPdfLoading] = useState(false);
+
+  const handleDownloadPdf = () => {
+    setIsDownloadPdfLoading(true);
+
+    const url = new URL(window.location);
+    url.searchParams.set('share', 'report');
+    window.history.pushState({}, '', url);
+
+    const element = document.getElementById('Operational_costs');
+
+    html2pdf()
+      .set({ filename: 'Operational_costReport.pdf', html2canvas: { scale: 2 } })
+      .from(element)
+      .save()
+      .finally(() => {
+        setIsDownloadPdfLoading(false);
+        url.searchParams.delete('share');
+        window.history.pushState({}, '', url);
+      });
+  };
   return (
-    <div id='Operational_costs'>
-    <p className="font-bold text-lg"> Operational Cost </p>
-        <div className="mb-4 flex flex-col p-6">
+    <div>
+      <p className="font-bold text-lg"> Operational Cost </p>
+      <div className=" flex flex-col px-6 pt-6" id='Operational_costs'>
+        <div className="flex justify-between">
           <p className="font-bold  ">Operational cost bifurcation</p>
-          <p className="text-sm text-gray-600 italic pt-4">
-            This chart displays the breakdown of operational costs by different cost types.
-          </p>
-          <div className="w-[600px]">
-            <Doughnut
-              data={doughnutChartData}
-              options={doughnutChartOptions}
-              height={550}
-              width={600}
-              ref={chartRef}
-              plugins={[ChartDataLabels, customLinesPlugin]} // Register the plugin here
-            />
-          </div>
+          {isReport ? null : (
+            <div className=" ">
+              <Button
+                className="primary-button mx-3 pdf_download_button"
+                onClick={handleDownloadPdf}
+                loading={isDownloadPdfLoading}
+                disabled={isDownloadPdfLoading}
+              >
+                <Download size="20" color="white" />
+              </Button>
+            </div>
+          )}
         </div>
+        <p className="text-sm text-gray-600 italic pt-4">
+          This chart displays the breakdown of operational costs by different cost types.
+        </p>
+        <div className="w-[600px]">
+          <Doughnut
+            data={doughnutChartData}
+            options={doughnutChartOptions}
+            height={550}
+            width={600}
+            ref={chartRef}
+            plugins={[ChartDataLabels, customLinesPlugin]} // Register the plugin here
+          />
+        </div>
+      </div>
     </div>
   );
 };

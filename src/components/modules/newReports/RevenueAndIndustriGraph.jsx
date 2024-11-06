@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Line, Pie } from 'react-chartjs-2';
 import dayjs from 'dayjs';
 import { useSearchParams } from 'react-router-dom';
-import { Menu, Button, Loader, } from '@mantine/core';
+import { Menu, Button, Loader } from '@mantine/core';
 import DateRangeSelector from '../../DateRangeSelector';
 import classNames from 'classnames';
 import { v4 as uuidv4 } from 'uuid';
@@ -23,9 +23,21 @@ import {
   LogarithmicScale,
   Chart,
 } from 'chart.js';
-import { useBookingReportByRevenueGraph, useBookingRevenueByIndustry, useBookings } from '../../../apis/queries/booking.queries';
-import { financialEndDate, financialStartDate, monthsInShort, serialize, timeLegend } from '../../../utils';
+import {
+  useBookingReportByRevenueGraph,
+  useBookingRevenueByIndustry,
+  useBookings,
+} from '../../../apis/queries/booking.queries';
+import {
+  financialEndDate,
+  financialStartDate,
+  monthsInShort,
+  serialize,
+  timeLegend,
+} from '../../../utils';
 import ViewByFilter from '../reports/ViewByFilter';
+import html2pdf from 'html2pdf.js';
+import { Download } from 'react-feather';
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -164,7 +176,7 @@ const RevenueAndIndustriGraph = () => {
   const { data: bookingData, isLoading: isLoadingBookingData } = useBookings(
     searchParams.toString(),
   );
- 
+
   const [startDate, setStartDate] = useState(financialStartDate);
   const [endDate, setEndDate] = useState(financialEndDate);
 
@@ -383,65 +395,136 @@ const RevenueAndIndustriGraph = () => {
   useEffect(() => {
     handleUpdateRevenueGraph();
   }, [revenueGraphData, groupBy]);
+
+  //For Pdf Download
+  const [isDownloadPdfLoading, setIsDownloadPdfLoading] = useState(false);
+
+  const handleDownloadPdf1 = () => {
+    setIsDownloadPdfLoading(true);
+
+    const url = new URL(window.location);
+    url.searchParams.set('share', 'report');
+    window.history.pushState({}, '', url);
+
+    const element = document.getElementById('Revenue_graph');
+
+    html2pdf()
+      .set({ filename: 'Revenue_graphReport.pdf', html2canvas: { scale: 2 } })
+      .from(element)
+      .save()
+      .finally(() => {
+        setIsDownloadPdfLoading(false);
+        url.searchParams.delete('share');
+        window.history.pushState({}, '', url);
+      });
+  };
+  const handleDownloadPdf2 = () => {
+    setIsDownloadPdfLoading(true);
+
+    const url = new URL(window.location);
+    url.searchParams.set('share', 'report');
+    window.history.pushState({}, '', url);
+
+    const element = document.getElementById('Industry_distribution');
+
+    html2pdf()
+      .set({ filename: 'Industry_disReport.pdf', html2canvas: { scale: 2 } })
+      .from(element)
+      .save()
+      .finally(() => {
+        setIsDownloadPdfLoading(false);
+        url.searchParams.delete('share');
+        window.history.pushState({}, '', url);
+      });
+  };
   return (
-    <div className={classNames('overflow-y-auto px-5 col-span-10 overflow-x-hidden')}>
-          <div className="my-6 w-[60rem]" id="revenue-pdf">
-            <div className={classNames("flex gap-8", isReport?'flex-col':'')}>
-              <div className="w-[70%] flex flex-col justify-between min-h-[300px]" id="Revenue_graph">
-                <div className="flex justify-between items-center">
-                  <p className="font-bold">Revenue Graph</p>
+    <div className={classNames('overflow-y-auto col-span-10 overflow-x-hidden')}>
+      <div className="w-[60rem]">
+        <div className={classNames('flex gap-8', isReport ? 'flex-col' : '')}>
+          <div className="w-[70%] flex flex-col justify-between pl-5" id="Revenue_graph">
+            <div className="flex justify-between items-center">
+              <p className="font-bold">Revenue Graph</p>
+              {isReport ? null : (
+                <div className=" ">
+                  <Button
+                    className="primary-button mx-3 pdf_download_button"
+                    onClick={handleDownloadPdf1}
+                    loading={isDownloadPdfLoading}
+                    disabled={isDownloadPdfLoading}
+                  >
+                    <Download size="20" color="white" />
+                  </Button>
                 </div>
-                <div className="h-[60px] mt-5 border-gray-450 flex ">
-                  <ViewByFilter handleViewBy={handleRevenueGraphViewBy} />
+              )}
+            </div>
+            <div className="mt-1 border-gray-450 flex ">
+              <ViewByFilter handleViewBy={handleRevenueGraphViewBy} />
+            </div>
+            {isRevenueGraphLoading ? (
+              <Loader className="m-auto" />
+            ) : (
+              <div className="flex flex-col pl-7 relative">
+                <p className="transform rotate-[-90deg] absolute left-[-38px] top-[40%] text-sm">
+                  {!isReport ? 'Amount in Lac' : ''}
+                </p>
+                <div className="">
+                  <Line
+                    data={updatedReveueGraph}
+                    options={options3}
+                    key={updatedReveueGraph.id}
+                    className="w-full"
+                    ref={chartRef}
+                    plugins={[ChartDataLabels]}
+                  />
                 </div>
-                {isRevenueGraphLoading ? (
-                  <Loader className="m-auto" />
-                ) : (
-                  <div className="flex flex-col pl-7 relative">
-                    <p className="transform rotate-[-90deg] absolute left-[-38px] top-[40%] text-sm">
-                      Amount in Lac &gt;
-                    </p>
-                    <div className="max-h-[350px]">
-                      <Line
-                        data={updatedReveueGraph}
-                        options={options3}
-                        key={updatedReveueGraph.id}
-                        className="w-full"
-                        ref={chartRef}
-                        plugins={[ChartDataLabels]}
-                      />
-                    </div>
-                    <p className="text-center text-sm">{timeLegend[groupBy]} &gt;</p>
+                <p className="text-center text-sm">{!isReport ? `${timeLegend[groupBy]}`  : ''}</p>
+              </div>
+            )}
+          </div>
+          <div
+            className={classNames('w-[40%] flex flex-col pl-5', !isReport ? '' : 'pt-6')}
+            id="Industry_distribution"
+          >
+            <div className="flex flex-col">
+              <div className="flex justify-between">
+                <p className="font-bold"> Industry Type Distribution</p>
+                {isReport ? null : (
+                  <div className=" ">
+                    <Button
+                      className="primary-button mx-3 pdf_download_button"
+                      onClick={handleDownloadPdf2}
+                      loading={isDownloadPdfLoading}
+                      disabled={isDownloadPdfLoading}
+                    >
+                      <Download size="20" color="white" />
+                    </Button>
                   </div>
                 )}
               </div>
-              <div className="w-[40%] flex flex-col" id="Industry_distribution">
-                <div className="flex flex-col">
-                  <p className="font-bold"> Industry Type Distribution</p>
-                  <p className="text-sm text-gray-600 italic py-4">
-                    This pie chart shows the percentage split of revenue generated across various
-                    industries
-                  </p>
-                </div>
-                <div className="w-72 m-auto">
-                  {isLoadingBookingData ? (
-                    <Loader className="mx-auto" />
-                  ) : !updatedIndustry.datasets[0].data.length ? (
-                    <p className="text-center">NA</p>
-                  ) : (
-                    <Pie
-                      data={updatedIndustry}
-                      options={barDataConfigByIndustry.options}
-                      key={updatedIndustry.id}
-                      ref={chartRef}
-                      plugins={[ChartDataLabels, customLinesPlugin]} // Ensure custom lines plugin is included
-                    />
-                  )}
-                </div>
-              </div>
+              <p className="text-sm text-gray-600 italic py-4">
+                This pie chart shows the percentage split of revenue generated across various
+                industries
+              </p>
+            </div>
+            <div className="w-72 m-auto">
+              {isLoadingBookingData ? (
+                <Loader className="mx-auto" />
+              ) : !updatedIndustry.datasets[0].data.length ? (
+                <p className="text-center">NA</p>
+              ) : (
+                <Pie
+                  data={updatedIndustry}
+                  options={barDataConfigByIndustry.options}
+                  key={updatedIndustry.id}
+                  ref={chartRef}
+                  plugins={[ChartDataLabels, customLinesPlugin]} // Ensure custom lines plugin is included
+                />
+              )}
             </div>
           </div>
         </div>
+      </div>
+    </div>
   );
 };
 

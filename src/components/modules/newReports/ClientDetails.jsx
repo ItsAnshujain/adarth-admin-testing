@@ -19,6 +19,9 @@ import {
 import { useBookingsNew } from '../../../apis/queries/booking.queries';
 import Table from '../../Table/Table';
 import Table1 from '../../Table/Table1';
+import classNames from 'classnames';
+import { Download } from 'react-feather';
+import html2pdf from 'html2pdf.js';
 
 ChartJS.register(
   ArcElement,
@@ -48,6 +51,7 @@ const ClientDetails = () => {
     sortBy: 'createdAt',
     sortOrder: 'desc',
   });
+  const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
   const { data: bookingData2, isLoading: isLoadingBookingData } = useBookingsNew(
     searchParams.toString(),
@@ -156,11 +160,47 @@ const ClientDetails = () => {
   }, []);
 
   // client details
+  //For Pdf Download
 
+  const [isDownloadPdfLoading, setIsDownloadPdfLoading] = useState(false);
+
+  const handleDownloadPdf = () => {
+    setIsDownloadPdfLoading(true);
+
+    const url = new URL(window.location);
+    url.searchParams.set('share', 'report');
+    window.history.pushState({}, '', url);
+
+    const element = document.getElementById('Client_details');
+
+    html2pdf()
+      .set({ filename: 'Client_detailsReport.pdf', html2canvas: { scale: 2 } })
+      .from(element)
+      .save()
+      .finally(() => {
+        setIsDownloadPdfLoading(false);
+        url.searchParams.delete('share');
+        window.history.pushState({}, '', url);
+      });
+  };
   return (
     <div className="flex flex-col col-span-10 overflow-x-hidden p-5" id='Client_details'>
-      <div className=" w-[50rem]">
+      <div className="">
+        <div className='flex justify-between'>
         <p className="font-bold ">Client Details</p>
+        {isReport ? null : (
+            <div className=" ">
+              <Button
+                className="primary-button mx-3 pdf_download_button"
+                onClick={handleDownloadPdf}
+                loading={isDownloadPdfLoading}
+                disabled={isDownloadPdfLoading}
+              >
+                <Download size="20" color="white" />
+              </Button>
+            </div>
+          )}
+          </div>
         <p className="text-sm text-gray-600 italic py-4">
           This report shows the client details based on retention status.
         </p>
@@ -190,7 +230,7 @@ const ClientDetails = () => {
             </Menu>
           </div>
           <div>
-            {filter2 && (
+            {filter2 && !isReport && (
               <Button onClick={handleReset2} className="mx-2 secondary-button">
                 Reset
               </Button>

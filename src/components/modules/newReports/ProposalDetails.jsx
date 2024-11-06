@@ -28,8 +28,8 @@ const ProposalDetails = () => {
   // proposals data
 
   return (
-    <div className="p-5">
-      <div className="border rounded p-8 flex-1 w-72" id="Proposal_details">
+    <div className="p-5" id="Revenue_cards">
+      <div className="border rounded p-8 flex-1 w-72" >
         <Image src={ProposalSentIcon} alt="folder" fit="contain" height={24} width={24} />
         <p className="my-2 text-sm">
           Total Proposals Created :{' '}

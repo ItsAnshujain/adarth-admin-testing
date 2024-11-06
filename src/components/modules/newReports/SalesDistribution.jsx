@@ -1,8 +1,8 @@
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import dayjs from 'dayjs';
 import { useSearchParams } from 'react-router-dom';
-import { Loader } from '@mantine/core';
+import { Button, Loader } from '@mantine/core';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 dayjs.extend(quarterOfYear);
@@ -21,6 +21,8 @@ import {
   Chart,
 } from 'chart.js';
 import { useBookingsNew } from '../../../apis/queries/booking.queries';
+import { Download } from 'react-feather';
+import html2pdf from 'html2pdf.js';
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -33,21 +35,7 @@ ChartJS.register(
   Title,
   LogarithmicScale,
 );
-const SalesDistribution = () => {
-  const [searchParams] = useSearchParams({
-    page: 1,
-    limit: 1000,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  });
-
-  const chartRef = useRef(null); // Reference to the chart instance
-
-  const { data: bookingData2, isLoading: isLoadingBookingData } = useBookingsNew(
-    searchParams.toString(),
-  );
-  
- const monthsInShort = [
+const monthsInShort = [
   'Apr',
   'May',
   'Jun',
@@ -61,6 +49,19 @@ const SalesDistribution = () => {
   'Feb',
   'Mar',
 ];
+const SalesDistribution = () => {
+  const [searchParams] = useSearchParams({
+    page: 1,
+    limit: 1000,
+    sortBy: 'createdAt',
+    sortOrder: 'desc',
+  });
+
+  const chartRef = useRef(null); // Reference to the chart instance
+
+  const { data: bookingData2, isLoading: isLoadingBookingData } = useBookingsNew(
+    searchParams.toString(),
+  );
   const currentFinancialYear = date => {
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
@@ -260,7 +261,6 @@ const SalesDistribution = () => {
     }),
     [aggregatedData3],
   );
-  console.log("data", aggregatedData3)
 
   const percentageBarData = useMemo(
     () => ({
@@ -306,11 +306,65 @@ const SalesDistribution = () => {
     }),
     [aggregatedData3, totalSalesByMonth],
   );
+  const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
+  //For Pdf Download
+  const [isDownloadPdfLoading, setIsDownloadPdfLoading] = useState(false);
+
+  const handleDownloadPdf1 = () => {
+    setIsDownloadPdfLoading(true);
+
+    const url = new URL(window.location);
+    url.searchParams.set('share', 'report');
+    window.history.pushState({}, '', url);
+
+    const element = document.getElementById('Sales_distribution');
+
+    html2pdf()
+      .set({ filename: 'Sales_disReport.pdf', html2canvas: { scale: 2 } })
+      .from(element)
+      .save()
+      .finally(() => {
+        setIsDownloadPdfLoading(false);
+        url.searchParams.delete('share');
+        window.history.pushState({}, '', url);
+      });
+  };
+  const handleDownloadPdf2 = () => {
+    setIsDownloadPdfLoading(true);
+
+    const url = new URL(window.location);
+    url.searchParams.set('share', 'report');
+    window.history.pushState({}, '', url);
+
+    const element = document.getElementById('Percentage_contribution');
+
+    html2pdf()
+      .set({ filename: 'Percentage_contriReport.pdf', html2canvas: { scale: 2 } })
+      .from(element)
+      .save()
+      .finally(() => {
+        setIsDownloadPdfLoading(false);
+        url.searchParams.delete('share');
+        window.history.pushState({}, '', url);
+      });
+  };
   return (
-    <div className="flex p-6 flex-col pt-10">
-      <div id="Sales_distribution">
-        <div className="flex justify-between items-center" >
+    <div className="flex flex-col pt-4">
+      <div id="Sales_distribution" className='p-6'>
+        <div className="flex justify-between items-center">
           <p className="font-bold">Monthly Sales Distribution</p>
+          {isReport ? null : (
+            <div className=" ">
+              <Button
+                className="primary-button mx-3 pdf_download_button"
+                onClick={handleDownloadPdf1}
+                loading={isDownloadPdfLoading}
+                disabled={isDownloadPdfLoading}
+              >
+                <Download size="20" color="white" />
+              </Button>
+            </div>
+          )}
         </div>
         <p className="text-sm text-gray-600 italic pt-3">
           This bar chart shows the monthly revenue distribution between different clients types.
@@ -321,7 +375,7 @@ const SalesDistribution = () => {
           </div>
         ) : (
           <div className="gap-10">
-            <div className="pt-4 w-[50rem]">
+            <div className="pt-4 w-[46rem]">
               <Bar
                 ref={chartRef}
                 data={barData}
@@ -332,9 +386,21 @@ const SalesDistribution = () => {
           </div>
         )}
       </div>
-      <div className="mt-10" id="Percentage_contribution">
+      <div className='px-6 pb-6' id="Percentage_contribution">
         <div className="flex justify-between items-center">
           <p className="font-bold">Monthly Percentage Contribution</p>
+          {isReport ? null : (
+            <div className=" ">
+              <Button
+                className="primary-button mx-3 pdf_download_button"
+                onClick={handleDownloadPdf2}
+                loading={isDownloadPdfLoading}
+                disabled={isDownloadPdfLoading}
+              >
+                <Download size="20" color="white" />
+              </Button>
+            </div>
+          )}
         </div>
         <p className="text-sm text-gray-600 italic pt-3">
           This chart visualizes the percentage contribution of different client types.
@@ -345,7 +411,7 @@ const SalesDistribution = () => {
           </div>
         ) : (
           <div className="gap-10">
-            <div className="pt-4 w-[50rem]">
+            <div className="pt-4 w-[46rem]">
               <Bar
                 ref={chartRef}
                 data={percentageBarData}

@@ -24,6 +24,8 @@ import {
 } from 'chart.js';
 import { useBookings, useBookingsNew } from '../../../apis/queries/booking.queries';
 import { monthsInShort } from '../../../utils';
+import html2pdf from 'html2pdf.js';
+import { Download } from 'react-feather';
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -297,84 +299,115 @@ const CategoryWiseReport = () => {
     setSelectedCategory('Billboard');
     setStartDate1(null);
     setEndDate1(null);
-    setCategoryList([]); // Trigger chart re-render
+    setCategoryList([]); 
   };
 
   const handleMenuItemClick4 = value => {
     setFilter4(value);
     setActiveView4(value);
   };
+  //For Pdf Download
+  const [isDownloadPdfLoading, setIsDownloadPdfLoading] = useState(false);
+
+  const handleDownloadPdf = () => {
+    setIsDownloadPdfLoading(true);
+
+    const url = new URL(window.location);
+    url.searchParams.set('share', 'report');
+    window.history.pushState({}, '', url);
+
+    const element = document.getElementById('Category_distribution');
+
+    html2pdf()
+      .set({ filename: 'Category_disReport.pdf', html2canvas: { scale: 2 } })
+      .from(element)
+      .save()
+      .finally(() => {
+        setIsDownloadPdfLoading(false);
+        url.searchParams.delete('share');
+        window.history.pushState({}, '', url);
+      });
+  };
   return (
-      <div className="pt-6 w-[40rem]" id="Category_distribution">
+    <div className={classNames('p-6 w-[45rem]', !isReport ? '' : ' pt-8')} id="Category_distribution">
+      <div className="flex justify-between">
         <p className="font-bold "> Category Wise Distribution</p>
-        <p className="text-sm text-gray-600 italic py-4">
-          This chart displays revenue data over different time periods, filtered by category of
-          inventory.
-        </p>
-        <div className="flex">
-          <div>
-            <Menu shadow="md" width={130}>
-              <Menu.Target>
-                <Button className="secondary-button">
-                  View By: {viewBy[activeView4] || 'Select'}
-                </Button>
-              </Menu.Target>
-              <Menu.Dropdown>
-                {list.map(({ label, value }) => (
-                  <Menu.Item
-                    key={value}
-                    onClick={() => handleMenuItemClick4(value)}
-                    className={classNames(activeView4 === value && 'text-purple-450 font-medium')}
-                  >
-                    {label}
-                  </Menu.Item>
-                ))}
-              </Menu.Dropdown>
-            </Menu>
-          </div>
-          <div className="mx-2">
-            <Menu shadow="md" width={130}>
-              <Menu.Target>
-                <Button className="secondary-button">
-                  {selectedCategory ? `Category: ${selectedCategory}` : 'Select Category'}
-                </Button>
-              </Menu.Target>
-              <Menu.Dropdown>
-                {categoryList.map(category => (
-                  <Menu.Item key={category} onClick={() => setSelectedCategory(category)}>
-                    {category}
-                  </Menu.Item>
-                ))}
-              </Menu.Dropdown>
-            </Menu>
-          </div>
-          <div>
-            {filter4 && !isReport && (
-              <Button onClick={handleReset4} className="mx-2 secondary-button">
-                Reset
-              </Button>
-            )}
-          </div>
-        </div>
-        {filter4 === 'customDate' && (
-          <div className="flex flex-col items-start space-y-4 py-2 ">
-            <DateRangeSelector
-              dateValue={[startDate1, endDate1]}
-              onChange={onDateChange4}
-              minDate={threeMonthsAgo}
-              maxDate={today}
-            />
+        {isReport ? null : (
+          <div className=" ">
+            <Button
+              className="primary-button mx-3 pdf_download_button"
+              onClick={handleDownloadPdf}
+              loading={isDownloadPdfLoading}
+              disabled={isDownloadPdfLoading}
+            >
+              <Download size="20" color="white" />
+            </Button>
           </div>
         )}
-
-        <div className=" my-4">
-          <Bar
-            ref={chartRef}
-            plugins={[ChartDataLabels]}
-            data={chartData4}
-            options={chartOptions4}
+      </div>
+      <p className="text-sm text-gray-600 italic py-4">
+        This chart displays revenue data over different time periods, filtered by category of
+        inventory.
+      </p>
+      <div className="flex">
+        <div>
+          <Menu shadow="md" width={130}>
+            <Menu.Target>
+              <Button className="secondary-button">
+                View By: {viewBy[activeView4] || 'Select'}
+              </Button>
+            </Menu.Target>
+            <Menu.Dropdown>
+              {list.map(({ label, value }) => (
+                <Menu.Item
+                  key={value}
+                  onClick={() => handleMenuItemClick4(value)}
+                  className={classNames(activeView4 === value && 'text-purple-450 font-medium')}
+                >
+                  {label}
+                </Menu.Item>
+              ))}
+            </Menu.Dropdown>
+          </Menu>
+        </div>
+        <div className="mx-2">
+          <Menu shadow="md" width={130}>
+            <Menu.Target>
+              <Button className="secondary-button">
+                {selectedCategory ? `Category: ${selectedCategory}` : 'Select Category'}
+              </Button>
+            </Menu.Target>
+            <Menu.Dropdown>
+              {categoryList.map(category => (
+                <Menu.Item key={category} onClick={() => setSelectedCategory(category)}>
+                  {category}
+                </Menu.Item>
+              ))}
+            </Menu.Dropdown>
+          </Menu>
+        </div>
+        <div>
+          {filter4 && !isReport && (
+            <Button onClick={handleReset4} className="mx-2 secondary-button">
+              Reset
+            </Button>
+          )}
+        </div>
+      </div>
+      {filter4 === 'customDate' && (
+        <div className="flex flex-col items-start space-y-4 py-2 ">
+          <DateRangeSelector
+            dateValue={[startDate1, endDate1]}
+            onChange={onDateChange4}
+            minDate={threeMonthsAgo}
+            maxDate={today}
           />
         </div>
+      )}
+
+      <div className=" my-4">
+        <Bar ref={chartRef} plugins={[ChartDataLabels]} data={chartData4} options={chartOptions4} />
+      </div>
     </div>
   );
 };

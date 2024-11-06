@@ -25,7 +25,7 @@ ChartJS.register(
   Legend
 );
 
-const InvoiceReportChart = ({ data, chartDataLabels }) => {
+const InvoiceReportChart = ({ data, chartDataLabels, isReport }) => {
   const chartData = {
     labels: data.length > 0 ? data.map(item => item.month) : ['No Data'],
     datasets: data.length > 0
@@ -120,11 +120,9 @@ const InvoiceReportChart = ({ data, chartDataLabels }) => {
   };
 
   return (
-    <div className="w-[70%] overflow-x-auto">
-      <div className="w-[1200px] h-[400px]">
+      <div className="w-[800px] h-[400px]">
         <Chart type="bar" data={chartData} options={chartOptions} plugins={[ChartDataLabels]} /> {/* Use datalabels plugin */}
       </div>
-    </div>
   );
 };
 
