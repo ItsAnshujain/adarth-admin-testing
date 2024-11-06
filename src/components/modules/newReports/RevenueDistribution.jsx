@@ -24,6 +24,8 @@ import {
 } from 'chart.js';
 import { useBookings } from '../../../apis/queries/booking.queries';
 import { monthsInShort } from '../../../utils';
+import html2pdf from 'html2pdf.js';
+import { Download } from 'react-feather';
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -364,9 +366,45 @@ const RevenueDistribution = () => {
     setStartDate2(null);
     setEndDate2(null);
   };
+  //For Pdf Download
+  const [isDownloadPdfLoading, setIsDownloadPdfLoading] = useState(false);
+
+  const handleDownloadPdf = () => {
+    setIsDownloadPdfLoading(true);
+
+    const url = new URL(window.location);
+    url.searchParams.set('share', 'report');
+    window.history.pushState({}, '', url);
+
+    const element = document.getElementById('Revenue_distribution');
+
+    html2pdf()
+      .set({ filename: 'Revenue_disReport.pdf', html2canvas: { scale: 2 } })
+      .from(element)
+      .save()
+      .finally(() => {
+        setIsDownloadPdfLoading(false);
+        url.searchParams.delete('share');
+        window.history.pushState({}, '', url);
+      });
+  };
   return (
-    <div className="p-6 w-[50rem]" id="Revenue_distribution">
-      <p className="font-bold ">Revenue Distribution</p>
+    <div className={classNames(' w-[48rem]', !isReport ? 'p-6' : 'px-6')} id="Revenue_distribution">
+      <div className="flex justify-between">
+        <p className="font-bold ">Revenue Distribution</p>
+        {isReport ? null : (
+          <div className="flex items-start ">
+            <Button
+              className="primary-button mx-3 pdf_download_button"
+              onClick={handleDownloadPdf}
+              loading={isDownloadPdfLoading}
+              disabled={isDownloadPdfLoading}
+            >
+              <Download size="20" color="white" />
+            </Button>
+          </div>
+        )}
+      </div>
       <p className="text-sm text-gray-600 italic py-4">
         This line chart shows revenue trends over selected time periods, with revenue displayed in
         lakhs.
@@ -402,7 +440,7 @@ const RevenueDistribution = () => {
         </div>
       )}
 
-      <div className={classNames('my-4', isReport ? 'w-32' : '')}>
+      <div className={classNames('', !isReport ? '' : 'my-4 max-w-[600px]')}>
         <Line
           data={chartData1}
           options={chartOptions1}

@@ -2,7 +2,7 @@ import { useMemo, useRef, useState, useEffect } from 'react';
 import { Bar, Doughnut, Pie } from 'react-chartjs-2';
 import dayjs from 'dayjs';
 import { useSearchParams } from 'react-router-dom';
-import { Loader } from '@mantine/core';
+import { Button, Loader } from '@mantine/core';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 dayjs.extend(quarterOfYear);
@@ -18,13 +18,11 @@ import {
   CategoryScale,
   Title,
   LogarithmicScale,
-  Chart,
-  layouts,
 } from 'chart.js';
-import { useBookingsNew, useUserSalesByUserId } from '../../../apis/queries/booking.queries';
-import { financialEndDate, financialStartDate, monthsInShort } from '../../../utils';
-import useUserStore from '../../../store/user.store';
+import { useBookingsNew } from '../../../apis/queries/booking.queries';
 import classNames from 'classnames';
+import html2pdf from 'html2pdf.js';
+import { Download } from 'react-feather';
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -81,7 +79,7 @@ const barDataConfigByClient = {
   options: {
     responsive: true,
     maintainAspectRatio: false,
-    radius: '90%', // Shrinks the pie chart to add space around it
+    radius: '90%', 
     plugins: {
       legend: {
         display: true,
@@ -100,7 +98,6 @@ const barDataConfigByClient = {
         anchor: 'end',
         align: 'end',
         // offset: 2,
-        // This keeps the data labels unaffected by chart size adjustments
       },
     },
   },
@@ -259,14 +256,76 @@ const SourceClientDistribution = () => {
       setUpdatedClient(pieChartData);
     }
   }, [pieChartData, bookingData]);
+
+  //For Pdf Download
+  const [isDownloadPdfLoading, setIsDownloadPdfLoading] = useState(false);
+
+  const handleDownloadPdf1 = () => {
+    setIsDownloadPdfLoading(true);
+
+    const url = new URL(window.location);
+    url.searchParams.set('share', 'report');
+    window.history.pushState({}, '', url);
+
+    const element = document.getElementById('Source_Distribution');
+
+    html2pdf()
+      .set({ filename: 'Source_DisReport.pdf', html2canvas: { scale: 2 } })
+      .from(element)
+      .save()
+      .finally(() => {
+        setIsDownloadPdfLoading(false);
+        url.searchParams.delete('share');
+        window.history.pushState({}, '', url);
+      });
+  };
+  const handleDownloadPdf2 = () => {
+    setIsDownloadPdfLoading(true);
+
+    const url = new URL(window.location);
+    url.searchParams.set('share', 'report');
+    window.history.pushState({}, '', url);
+
+    const element = document.getElementById('Client_Distribution');
+
+    html2pdf()
+      .set({ filename: 'Client_DisReport.pdf', html2canvas: { scale: 2 } })
+      .from(element)
+      .save()
+      .finally(() => {
+        setIsDownloadPdfLoading(false);
+        url.searchParams.delete('share');
+        window.history.pushState({}, '', url);
+      });
+  };
   return (
-    <div className={classNames('flex', isReport ? 'flex-col pt-20' : 'flex-row')}>
-      <div className="flex flex-col mt-2 p-4  min-h-[200px]">
-        <p className="font-bold">Source Distribution</p>
+    <div className={classNames('flex gap-8', isReport ? 'flex-col' : 'pt-4')}>
+      <div
+        className={classNames(
+          'flex flex-col mt-2   min-h-[200px]',
+          !isReport ? 'w-[40%] p-4' : 'px-4',
+        )}
+        id="Source_Distribution"
+      >
+        <div className="flex justify-between">
+          <p className="font-bold">Source Distribution</p>
+          {isReport ? null : (
+            <div className="flex items-start ">
+              <Button
+                className="primary-button mx-3 pdf_download_button"
+                onClick={handleDownloadPdf1}
+                loading={isDownloadPdfLoading}
+                disabled={isDownloadPdfLoading}
+              >
+                <Download size="20" color="white" />
+              </Button>
+            </div>
+          )}
+        </div>
         <p className="text-sm text-gray-600 italic py-4">
           This chart shows the revenue split between "Own Sites" and "Traded Sites".
         </p>
-        <div className=" mx-6" id="Source_Distribution">
+        <div className=" mx-6">
           {isLoadingBookingData ? (
             <Loader className="mx-auto" />
           ) : (
@@ -279,13 +338,33 @@ const SourceClientDistribution = () => {
           )}
         </div>
       </div>
-      <div className="flex flex-col mt-2  p-4  min-h-[200px]">
-        <p className="font-bold">Client Type Distribution</p>
+      <div
+        className={classNames(
+          'flex flex-col min-h-[200px]',
+          !isReport ? 'w-[60%] mt-2  p-4' : 'px-4',
+        )}
+        id="Client_Distribution"
+      >
+        <div className="flex justify-between">
+          <p className="font-bold">Client Type Distribution</p>
+          {isReport ? null : (
+            <div className="flex items-start ">
+              <Button
+                className="primary-button mx-3 pdf_download_button"
+                onClick={handleDownloadPdf2}
+                loading={isDownloadPdfLoading}
+                disabled={isDownloadPdfLoading}
+              >
+                <Download size="20" color="white" />
+              </Button>
+            </div>
+          )}
+        </div>
         <p className="text-sm text-gray-600 italic pt-4">
           This chart breaks down revenue by client type, including "Direct Clients", "Local
           Agencies", "National Agencies", and "Government".
         </p>
-        <div className="w-72 justify-center mx-40" id="Client_Distribution">
+        <div className="w-72 justify-center mx-40">
           {isLoadingBookingData ? (
             <Loader className="mx-auto" />
           ) : updatedClient && updatedClient.datasets[0].data.length > 0 ? (
