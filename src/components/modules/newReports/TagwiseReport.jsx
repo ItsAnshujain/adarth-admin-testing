@@ -85,7 +85,7 @@ const TagwiseReport = () => {
   const chartRef = useRef(null); // Reference to the chart instance
 
   const additionalTagsQuery = useDistinctAdditionalTags();
-  const [selectedTags, setSelectedTags] = useState(['BMR']);
+  const [selectedTags, setSelectedTags] = useState(['BMR', 'HSTC']);
   const [startDate1, setStartDate1] = useState(null);
   const [endDate1, setEndDate1] = useState(null);
   const [filter3, setFilter3] = useState('currentYear');
@@ -753,7 +753,7 @@ const TagwiseReport = () => {
     setActiveView5('revenue');
     setStartDate1(null);
     setEndDate1(null);
-    setSelectedTags(['BMR']);
+    setSelectedTags(['BMR', 'HSTC']);
   };
 
   const handleMenuItemClick3 = value => {

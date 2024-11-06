@@ -266,7 +266,7 @@ const InvoiceAmountCollReport = () => {
       });
   };
   return (
-    <div className="col-span-12 lg:col-span-10 p-5 overflow-hidden" id="invoice_report">
+    <div className={classNames("col-span-12 lg:col-span-10 p-5 overflow-hidden", !isReport?'':' pt-16')} id="invoice_report">
       <div className="flex justify-between">
         <p className="font-bold ">Invoice and amount collected Report</p>
         {isReport ? null : (
