@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Text, Image, Loader, Button } from '@mantine/core';
 import { useSearchParams } from 'react-router-dom';
 import { useBookingsNew } from '../../../apis/queries/booking.queries';
@@ -8,7 +8,44 @@ import html2pdf from 'html2pdf.js';
 import OngoingOrdersIcon from '../../../assets/ongoing-orders.svg';
 import UpcomingOrdersIcon from '../../../assets/upcoming-orders.svg';
 import CompletedOrdersIcon from '../../../assets/completed-orders.svg';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 import dayjs from 'dayjs';
+
+const customLinesPlugin = {
+  id: 'customLines',
+  afterDraw(chart) {
+    const ctx = chart.ctx;
+    if (!ctx) return;
+
+    const dataset = chart.getDatasetMeta(0).data;
+
+    dataset.forEach((arc, index) => {
+      const { startAngle, endAngle, outerRadius, x, y } = arc.getProps(
+        ['startAngle', 'endAngle', 'outerRadius', 'x', 'y'],
+        true,
+      );
+
+      const angle = (startAngle + endAngle) / 2;
+      const xEdge = Math.cos(angle) * outerRadius;
+      const yEdge = Math.sin(angle) * outerRadius;
+
+      const xLine = xEdge + Math.cos(angle) * 5;
+      const yLine = yEdge + Math.sin(angle) * 5;
+
+      const xEnd = x + xLine;
+      const yEnd = y + yLine;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(x + xEdge, y + yEdge);
+      ctx.lineTo(xEnd, yEnd);
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    });
+  },
+};
 const RevenueBreakup = () => {
   const [searchParams] = useSearchParams({
     page: 1,
@@ -23,7 +60,8 @@ const RevenueBreakup = () => {
     error,
   } = useBookingsNew(searchParams.toString());
 
-  // revenue breakup according to client type
+  const chartRef = useRef(null);
+
   const aggregatedData2 = useMemo(() => {
     if (!bookingData2) return {};
 
@@ -74,9 +112,35 @@ const RevenueBreakup = () => {
     }),
     [aggregatedData2],
   );
-  // revenue breakup according to client type
-
-  // order details
+  const config = {
+    options: {
+      
+      responsive: true,
+      
+      plugins: {
+        datalabels: {
+          formatter: value => {
+            const numericValue = Number(value);
+            if (!isNaN(numericValue)) {
+              return numericValue >= 1 ? Math.floor(numericValue) : numericValue.toFixed(1);
+            }
+            return '';
+          },
+          color: '#000',
+          anchor: 'end',
+          align: 'end',
+          offset:0.5
+        },
+      },
+      layout: {
+        padding: {
+          bottom: 15,
+          // left: 15,
+          right: 15,
+        },
+      },
+    },
+  };
   const today = dayjs();
   const calculateTotalRevenueAndCount = status => {
     if (!bookingData2) return { total: 0, count: 0 };
@@ -145,13 +209,18 @@ const RevenueBreakup = () => {
 
   return (
     <div className={`${!isLoadingBookingData ? 'loading_completed' : ''} p-5`} id="Revenue_breakup">
-      <div className="flex justify-between gap-4 flex-wrap" >
+      <div className="flex justify-between gap-4 flex-wrap">
         <div className="flex gap-4 p-4 border rounded-md items-center">
           <div className="w-32">
             {isLoadingBookingData ? (
               <Loader className="mx-auto" />
             ) : (
-              <Doughnut options={{ responsive: true }} data={revenueBreakupData} />
+              <Doughnut
+                options={config.options}
+                data={revenueBreakupData}
+                ref={chartRef}
+                plugins={[ChartDataLabels, customLinesPlugin]}
+              />
             )}
           </div>
           <div>
@@ -212,7 +281,7 @@ const RevenueBreakup = () => {
               loading={isDownloadPdfLoading}
               disabled={isDownloadPdfLoading}
             >
-             <Download size="20" color="white" />
+              <Download size="20" color="white" />
             </Button>
           </div>
         )}

@@ -51,8 +51,8 @@ const customLinesPlugin = {
       const xEdge = Math.cos(angle) * outerRadius;
       const yEdge = Math.sin(angle) * outerRadius;
 
-      const xLine = xEdge + Math.cos(angle) * 10;
-      const yLine = yEdge + Math.sin(angle) * 10;
+      const xLine = xEdge + Math.cos(angle) * 5;
+      const yLine = yEdge + Math.sin(angle) * 5;
 
       const xEnd = x + xLine;
       const yEnd = y + yLine;
@@ -136,7 +136,7 @@ const PrintingMountingCosts = () => {
           },
           anchor: 'end',
           align: 'end',
-          offset: 8,
+          offset: 0.5,
         },
         customLines: true,
         tooltip: {
@@ -152,18 +152,12 @@ const PrintingMountingCosts = () => {
       },
       layout: {
         padding: {
-          top: 20,
-          bottom: 20,
-          left: 25,
-          right: 25,
+          top: 10,
+          bottom: 15,
+          left: 15,
+          right: 15,
         },
       },
-      elements: {
-        arc: {
-          borderWidth: 1,
-        },
-      },
-      cutout: '65%',
     },
   };
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';

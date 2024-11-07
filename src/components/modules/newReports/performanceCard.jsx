@@ -106,7 +106,6 @@ const PerformanceCard = () => {
     <div
       className={classNames(
         'px-5 lg:col-span-10 col-span-12',
-        !isReport ? '' : ' pt-5',
       )}
       id="PerformanceCards"
     >

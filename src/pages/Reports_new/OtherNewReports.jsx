@@ -38,8 +38,13 @@ const OtherNewReports = () => {
 
     const element = document.getElementById('New_reports');
 
+    const date = new Date();
+    const month = date.toLocaleString('default', { month: 'long' }); 
+    const year = date.getFullYear(); 
+    const filename = `Financial Report ${month} ${year}.pdf`;
+
     html2pdf()
-      .set({ filename: 'report.pdf', html2canvas: { scale: 2 } })
+      .set({ filename, html2canvas: { scale: 2 } })
       .from(element)
       .save()
       .finally(() => {
@@ -121,11 +126,11 @@ const OtherNewReports = () => {
           <SalesDistribution />
           <SalesComparision />
         </div>
-        <div className='border-2 p-5 border-black my-2'>
+        <div className="border-2 p-5 border-black my-2">
           <OperationalCosts />
           <PrintingMountingCosts />
         </div>
-        <div className='border-2 p-5 border-black my-2'>
+        <div className="border-2 p-5 border-black my-2">
           <p className="font-bold text-lg"> Client Data</p>
           <CampaignCards />
           <CampaignDetails />

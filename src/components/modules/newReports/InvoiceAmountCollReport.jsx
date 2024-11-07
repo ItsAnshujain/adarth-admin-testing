@@ -266,7 +266,7 @@ const InvoiceAmountCollReport = () => {
       });
   };
   return (
-    <div className={classNames("col-span-12 lg:col-span-10 p-5 overflow-hidden", !isReport?'':' pt-16')} id="invoice_report">
+    <div className={classNames("col-span-12 lg:col-span-10 p-5 overflow-hidden", !isReport?'':'pt-12')} id="invoice_report">
       <div className="flex justify-between">
         <p className="font-bold ">Invoice and amount collected Report</p>
         {isReport ? null : (
@@ -286,7 +286,10 @@ const InvoiceAmountCollReport = () => {
         This report provide insights into the invoice raised, amount collected and outstanding by
         table, graph and chart.
       </p>
-      <div className="flex py-4">
+      
+      <div className="flex flex-col lg:flex-row gap-10  overflow-x-auto">
+        <div className="overflow-y-auto w-[600px]">
+        <div className="flex pb-4">
         <div>
           <Menu shadow="md" width={200}>
             <Menu.Target>
@@ -316,7 +319,7 @@ const InvoiceAmountCollReport = () => {
         {
           <div>
             {' '}
-            <p className="text-sm text-gray-600 italic ml-[450px]"> (Amounts in Lacs)</p>
+            <p className="text-sm text-gray-600 italic ml-[50px]"> (Amounts in Lacs)</p>
           </div>
         }
       </div>
@@ -330,8 +333,6 @@ const InvoiceAmountCollReport = () => {
           />
         </div>
       )}
-      <div className="flex flex-col lg:flex-row gap-10  overflow-x-auto">
-        <div className="overflow-y-auto w-[600px]">
           <Table1
             data={groupedData1 || []}
             COLUMNS={column1}
@@ -341,7 +342,6 @@ const InvoiceAmountCollReport = () => {
         </div>
 
         <div className="flex flex-col">
-          <p className="pb-6 font-bold text-center">Invoice Raised Vs Amount Collected</p>
           <GaugeChart
             invoiceRaised={isFilterApplied ? invoiceRaised : 0}
             amountCollected={isFilterApplied ? amountCollected : 0}
@@ -349,7 +349,7 @@ const InvoiceAmountCollReport = () => {
         </div>
       </div>
       <div className={classNames('flex flex-col ', !isReport ? 'items-center' : '')}>
-        <p className="py-10 font-bold">Invoice Raised Vs Amount Collected Vs Outstanding</p>
+        <p className="pt-4 pb-2 font-bold">Invoice Raised Vs Amount Collected Vs Outstanding</p>
         <InvoiceReportChart
           data={activeView1 ? groupedData1 : []}
           chartDataLabels={[ChartDataLabels]}

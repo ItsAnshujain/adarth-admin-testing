@@ -1,21 +1,77 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Text, Image, Loader, Button } from '@mantine/core';
-import { useSearchParams } from 'react-router-dom';
-import { useBookingsNew } from '../../../apis/queries/booking.queries';
-import { useFetchProposals } from '../../../apis/queries/proposal.queries';
-
-import ProposalSentIcon from '../../../assets/proposal-sent.svg';
 import { useCampaignStats } from '../../../apis/queries/campaigns.queries';
 import { Doughnut } from 'react-chartjs-2';
-import classNames from 'classnames';
 import html2pdf from 'html2pdf.js';
 import { Download } from 'react-feather';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+
+const customLinesPlugin = {
+  id: 'customLines',
+  afterDraw(chart) {
+    const ctx = chart.ctx;
+    if (!ctx) return;
+
+    const dataset = chart.getDatasetMeta(0).data;
+
+    dataset.forEach((arc, index) => {
+      const { startAngle, endAngle, outerRadius, x, y } = arc.getProps(
+        ['startAngle', 'endAngle', 'outerRadius', 'x', 'y'],
+        true,
+      );
+
+      const angle = (startAngle + endAngle) / 2;
+      const xEdge = Math.cos(angle) * outerRadius;
+      const yEdge = Math.sin(angle) * outerRadius;
+
+      const xLine = xEdge + Math.cos(angle) * 5;
+      const yLine = yEdge + Math.sin(angle) * 5;
+
+      const xEnd = x + xLine;
+      const yEnd = y + yLine;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(x + xEdge, y + yEdge);
+      ctx.lineTo(xEnd, yEnd);
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    });
+  },
+};
 const CampaignCards = () => {
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
-
+  const chartRef = useRef(null);
   const config = {
     type: 'line',
-    options: { responsive: true },
+    options: {
+      responsive: true,
+      plugins: {
+        datalabels: {
+          formatter: value => {
+            const numericValue = Number(value);
+            if (!isNaN(numericValue)) {
+              return numericValue >= 1 ? Math.floor(numericValue) : numericValue.toFixed(1);
+            }
+            return '';
+          },
+          color: '#000',
+          anchor: 'end',
+          align: 'end',
+          offset: 0.5,
+        },
+      },
+      layout: {
+        padding: {
+          top: 10,
+          bottom: 15,
+          left: 10,
+          right: 10,
+        },
+      },
+    },
   };
 
   const { data: stats, isLoading: isStatsLoading } = useCampaignStats();
@@ -72,9 +128,7 @@ const CampaignCards = () => {
   return (
     <div className="px-5" id="Campaign_cards">
       <div className="flex justify-between">
-        <p className='font-bold py-4'>
-          Campaigns stats report
-        </p>
+        <p className="font-bold py-4">Campaign stats report</p>
         {isReport ? null : (
           <div className=" ">
             <Button
@@ -89,66 +143,81 @@ const CampaignCards = () => {
         )}
       </div>
       <div className="flex w-1/3 gap-4 h-[250px] ">
-        <div className="flex gap-4 p-4 border rounded-md items-center min-h-[200px]">
-          <div className="w-32">
-            {isStatsLoading ? (
-              <Loader className="mx-auto" />
-            ) : stats?.printOngoing === 0 && stats?.printCompleted === 0 ? (
-              <p className="text-center">NA</p>
-            ) : (
-              <Doughnut options={config.options} data={printStatusData} />
-            )}
-          </div>
-          <div>
-            <p className="font-medium">Printing Status</p>
-            <div className="flex gap-8 mt-6 flex-wrap">
-              <div className="flex gap-2 items-center">
-                <div className="h-2 w-1 p-2 bg-orange-350 rounded-full" />
-                <div>
-                  <p className="my-2 text-xs font-light text-slate-400">Ongoing</p>
-                  <p className="font-bold text-lg">{stats?.printOngoing ?? 0}</p>
+        <div className=" p-4 border rounded-md items-center ">
+          <p className="font-medium text-center">Printing Status</p>
+          <div className="flex gap-4">
+            <div className="w-32  mt-6">
+              {isStatsLoading ? (
+                <Loader className="mx-auto" />
+              ) : stats?.printOngoing === 0 && stats?.printCompleted === 0 ? (
+                <p className="text-center">NA</p>
+              ) : (
+                <Doughnut
+                  options={config.options}
+                  data={printStatusData}
+                  ref={chartRef}
+                  plugins={[ChartDataLabels, customLinesPlugin]}
+                />
+              )}
+            </div>
+            <div>
+              <div className="flex gap-8 mt-6 flex-wrap">
+                <div className="flex gap-2 items-center">
+                  <div className="h-2 w-1 p-2 bg-orange-350 rounded-full" />
+                  <div>
+                    <p className=" mt-2 text-xs font-light text-slate-400">Ongoing</p>
+                    <p className="font-bold text-lg">{stats?.printOngoing ?? 0}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-2 items-center">
-                <div className="h-2 w-1 p-2 rounded-full bg-purple-350" />
-                <div>
-                  <p className="my-2 text-xs font-light text-slate-400">Completed</p>
-                  <p className="font-bold text-lg">{stats?.printCompleted ?? 0}</p>
+                <div className="flex gap-2 items-center">
+                  <div className="h-2 w-1 p-2 rounded-full bg-purple-350" />
+                  <div>
+                    <p className=" text-xs font-light text-slate-400">Completed</p>
+                    <p className="font-bold text-lg">{stats?.printCompleted ?? 0}</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div className="flex gap-4 p-4 border rounded-md items-center min-h-[200px]">
-          <div className="w-32">
+        <div className=" p-4 border rounded-md items-center ">
+        <p className="font-medium text-center">Mounting Status</p>
+          <div className="flex gap-4">
+          
+          <div className="w-32 mt-6">
             {isStatsLoading ? (
               <Loader className="mx-auto" />
             ) : stats?.mountOngoing === 0 && stats?.mountCompleted === 0 ? (
               <p className="text-center">NA</p>
             ) : (
-              <Doughnut options={config.options} data={mountStatusData} />
+              <Doughnut
+                options={config.options}
+                data={mountStatusData}
+                ref={chartRef}
+                plugins={[ChartDataLabels, customLinesPlugin]}
+              />
             )}
           </div>
           <div>
-            <p className="font-medium">Mounting Status</p>
             <div className="flex gap-8 mt-6 flex-wrap">
               <div className="flex gap-2 items-center">
                 <div className="h-2 w-1 p-2 bg-orange-350 rounded-full" />
                 <div>
-                  <p className="my-2 text-xs font-light text-slate-400">Ongoing</p>
+                  <p className="mt-2 text-xs font-light text-slate-400">Ongoing</p>
                   <p className="font-bold text-lg">{stats?.mountOngoing ?? 0}</p>
                 </div>
               </div>
               <div className="flex gap-2 items-center">
                 <div className="h-2 w-1 p-2 rounded-full bg-purple-350" />
                 <div>
-                  <p className="my-2 text-xs font-light text-slate-400">Completed</p>
+                  <p className="text-xs font-light text-slate-400">Completed</p>
                   <p className="font-bold text-lg">{stats?.mountCompleted ?? 0}</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
