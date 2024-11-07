@@ -134,6 +134,7 @@ const RevenueBreakup = () => {
       },
       layout: {
         padding: {
+          top:2,
           bottom: 15,
           // left: 15,
           right: 15,
