@@ -324,7 +324,7 @@ const CategoryWiseReport = () => {
   };
   return (
     <div
-      className='p-6 w-[45rem]'
+      className='p-6 w-[38rem]'
       id="Category_distribution"
     >
       <div className="flex justify-between">

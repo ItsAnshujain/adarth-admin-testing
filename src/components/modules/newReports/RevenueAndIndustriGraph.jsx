@@ -19,11 +19,9 @@ import {
   CategoryScale,
   Title,
   LogarithmicScale,
-  Chart,
 } from 'chart.js';
 import {
   useBookingReportByRevenueGraph,
-  useBookingRevenueByIndustry,
   useBookings,
 } from '../../../apis/queries/booking.queries';
 import {
@@ -250,14 +248,6 @@ const RevenueAndIndustriGraph = () => {
       }),
     );
 
-  const { data: revenueDataByIndustry, isLoading: isByIndustryLoading } =
-    useBookingRevenueByIndustry(
-      serialize({
-        startDate,
-        endDate,
-      }),
-    );
-
   const handleRevenueGraphViewBy = viewType => {
     if (viewType === 'reset' || viewType === 'year') {
       setStartDate(financialStartDate);
@@ -430,10 +420,9 @@ const RevenueAndIndustriGraph = () => {
       });
   };
   return (
-    <div className={classNames('overflow-y-auto col-span-10 overflow-x-hidden')}>
-      <div className="w-[60rem]">
+    <div className={classNames('overflow-y-auto overflow-x-hidden')}>
         <div className={classNames('flex gap-8', isReport ? 'flex-col' : '')}>
-          <div className="w-[70%] flex flex-col justify-between pl-5" id="Revenue_graph">
+          <div className="w-[38rem] flex flex-col justify-between pl-5" id="Revenue_graph">
             <div className="flex justify-between items-center">
               <p className="font-bold">Revenue Graph</p>
               {isReport ? null : (
@@ -474,7 +463,7 @@ const RevenueAndIndustriGraph = () => {
             )}
           </div>
           <div
-            className='w-[40%] flex flex-col pl-5'
+            className='w-[25rem] flex flex-col pl-5'
             id="Industry_distribution"
           >
             <div className="flex flex-col">
@@ -498,7 +487,7 @@ const RevenueAndIndustriGraph = () => {
                 industries
               </p>
             </div>
-            <div className="w-72 m-auto">
+            <div className="w-72">
               {isLoadingBookingData ? (
                 <Loader className="mx-auto" />
               ) : !updatedIndustry.datasets[0].data.length ? (
@@ -515,7 +504,6 @@ const RevenueAndIndustriGraph = () => {
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 };
