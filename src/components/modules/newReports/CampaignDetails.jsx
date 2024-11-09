@@ -219,9 +219,9 @@ const CampaignDetails = () => {
           )}
         </div>
       </div>
-      <div className={classNames("px-5 col-span-12 md:col-span-12 lg:col-span-10 border-gray-450  overflow-auto", !isReport?'':'h-[360px]')}>
+      <div className="px-5 col-span-12 md:col-span-12 lg:col-span-10 border-gray-450  overflow-auto">
         <Table1
-          data={sortedBookingData} // Use manually sorted data
+          data={sortedBookingData} 
           COLUMNS={column5}
           loading={isLoadingBookingData}
           showPagination={false}

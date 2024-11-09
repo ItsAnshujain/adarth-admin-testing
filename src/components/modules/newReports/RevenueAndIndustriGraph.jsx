@@ -469,12 +469,12 @@ const RevenueAndIndustriGraph = () => {
                     plugins={[ChartDataLabels]}
                   />
                 </div>
-                <p className="text-center text-sm">{!isReport ? `${timeLegend[groupBy]}` : ''}</p>
+                <p className="text-center text-sm">{timeLegend[groupBy]} &gt;</p>
               </div>
             )}
           </div>
           <div
-            className={classNames('w-[40%] flex flex-col pl-5', !isReport ? '' : 'pt-6')}
+            className='w-[40%] flex flex-col pl-5'
             id="Industry_distribution"
           >
             <div className="flex flex-col">

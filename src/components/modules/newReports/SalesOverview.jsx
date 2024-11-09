@@ -490,14 +490,12 @@ const SalesOverview = () => {
     [],
   );
 
-  // Hook for table state
   const tableInstance = useTable({
     columns: tableSalesColumns,
     data: tableSalesData,
   });
 
-  // Destructure properties from tableInstance
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = tableInstance;
+  const { headerGroups, rows, prepareRow } = tableInstance;
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
   //For Pdf Download

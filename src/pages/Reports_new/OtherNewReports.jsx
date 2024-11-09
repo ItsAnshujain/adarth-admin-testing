@@ -22,6 +22,7 @@ import RevenueBreakup from '../../components/modules/newReports/RevenueBreakup';
 import CampaignCards from '../../components/modules/newReports/CampaingCards';
 import SalesOverview from '../../components/modules/newReports/SalesOverview';
 import { downloadPdf } from '../../utils';
+import classNames from 'classnames';
 
 const OtherNewReports = () => {
   //For Pdf Download
@@ -73,33 +74,41 @@ const OtherNewReports = () => {
       },
     );
   };
+  const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
   return (
-    <div className="overflow-y-auto p-3 col-span-10 overflow-hidden">
-      <div className="flex flex-end justify-end ">
-        <div className="py-5 flex items-start">
-          <Button
-            leftIcon={<Download size="20" color="white" />}
-            className="primary-button mx-3 pdf_download_button"
-            onClick={handleDownloadPdf}
-            loading={isDownloadLoading}
-            disabled={isDownloadLoading}
-          >
-            Download PDF
-          </Button>
+    <div
+      className={classNames(
+        'overflow-y-auto p-3 overflow-hidden',
+        !isReport ? 'col-span-10' : ' col-span-12',
+      )}
+    >
+      {!isReport ? (
+        <div className="flex flex-end justify-end ">
+          <div className="py-5 flex items-start">
+            <Button
+              leftIcon={<Download size="20" color="white" />}
+              className="primary-button mx-3 pdf_download_button"
+              onClick={handleDownloadPdf}
+              loading={isDownloadLoading}
+              disabled={isDownloadLoading}
+            >
+              Download PDF
+            </Button>
+          </div>
+          <div className="py-5 flex items-start">
+            <Button
+              leftIcon={<Download size="20" color="white" />}
+              className="primary-button"
+              onClick={handleDownloadExcel}
+              loading={isDownloadExcelLoading}
+              disabled={isDownloadExcelLoading}
+            >
+              Income Statement
+            </Button>
+          </div>
         </div>
-        <div className="py-5 flex items-start">
-          <Button
-            leftIcon={<Download size="20" color="white" />}
-            className="primary-button"
-            onClick={handleDownloadExcel}
-            loading={isDownloadExcelLoading}
-            disabled={isDownloadExcelLoading}
-          >
-            Income Statement
-          </Button>
-        </div>
-      </div>
+      ) : null}
       <div id="New_reports">
         <div className="border-2 p-5 border-black">
           <p className="font-bold text-lg"> Revenue </p>

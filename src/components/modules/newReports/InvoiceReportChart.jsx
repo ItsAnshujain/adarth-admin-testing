@@ -25,7 +25,7 @@ ChartJS.register(
   Legend
 );
 
-const InvoiceReportChart = ({ data, chartDataLabels, isReport }) => {
+const InvoiceReportChart = ({ data, chartDataLabels }) => {
   const chartData = {
     labels: data.length > 0 ? data.map(item => item.month) : ['No Data'],
     datasets: data.length > 0

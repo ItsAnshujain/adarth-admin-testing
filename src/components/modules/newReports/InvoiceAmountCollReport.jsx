@@ -263,10 +263,7 @@ const InvoiceAmountCollReport = () => {
   };
   return (
     <div
-      className={classNames(
-        'col-span-12 lg:col-span-10 p-5 overflow-hidden',
-        !isReport ? '' : 'pt-12',
-      )}
+      className='col-span-12 lg:col-span-10 p-5 overflow-hidden'
       id="invoice_report"
     >
       <div className="flex justify-between">
@@ -355,7 +352,6 @@ const InvoiceAmountCollReport = () => {
         <InvoiceReportChart
           data={activeView1 ? groupedData1 : []}
           chartDataLabels={[ChartDataLabels]}
-          isReport={isReport}
         />{' '}
       </div>
     </div>

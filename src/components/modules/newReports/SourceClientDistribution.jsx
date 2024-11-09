@@ -296,12 +296,9 @@ const SourceClientDistribution = () => {
       });
   };
   return (
-    <div className={classNames('flex gap-8', isReport ? 'flex-col' : 'pt-4')}>
+    <div className={classNames('flex gap-8 pt-4', isReport ? 'flex-col' : '')}>
       <div
-        className={classNames(
-          'flex flex-col mt-2   min-h-[200px]',
-          !isReport ? 'w-[40%] p-4' : 'px-4',
-        )}
+        className='flex flex-col mt-2 p-4  min-h-[200px]'
         id="Source_Distribution"
       >
         <div className="flex justify-between">
@@ -336,10 +333,7 @@ const SourceClientDistribution = () => {
         </div>
       </div>
       <div
-        className={classNames(
-          'flex flex-col min-h-[200px]',
-          !isReport ? 'w-[60%] mt-2  p-4' : 'px-4',
-        )}
+        className='flex flex-col p-4 min-h-[200px]'
         id="Client_Distribution"
       >
         <div className="flex justify-between">

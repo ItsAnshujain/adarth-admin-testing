@@ -386,7 +386,7 @@ const RevenueDistribution = () => {
       });
   };
   return (
-    <div className={classNames(' w-[48rem]', !isReport ? 'p-6' : 'px-6')} id="Revenue_distribution">
+    <div className='w-[48rem] p-6' id="Revenue_distribution">
       <div className="flex justify-between">
         <p className="font-bold ">Revenue Distribution</p>
         {isReport ? null : (
@@ -437,7 +437,7 @@ const RevenueDistribution = () => {
         </div>
       )}
 
-      <div className={classNames('', !isReport ? '' : 'my-4 max-w-[600px]')}>
+      <div>
         <Line
           data={chartData1}
           options={chartOptions1}
