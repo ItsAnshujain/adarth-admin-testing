@@ -386,7 +386,7 @@ const RevenueDistribution = () => {
       });
   };
   return (
-    <div className='w-[45rem] p-6' id="Revenue_distribution">
+    <div className='w-[40rem] p-6' id="Revenue_distribution">
       <div className="flex justify-between">
         <p className="font-bold ">Revenue Distribution</p>
         {isReport ? null : (
