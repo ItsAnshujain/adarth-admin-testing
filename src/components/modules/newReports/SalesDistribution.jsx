@@ -1,7 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import dayjs from 'dayjs';
-import { useSearchParams } from 'react-router-dom';
 import { Button, Loader } from '@mantine/core';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
@@ -23,6 +22,7 @@ import {
 import { useBookingsNew } from '../../../apis/queries/booking.queries';
 import { Download } from 'react-feather';
 import html2pdf from 'html2pdf.js';
+import { serialize } from '../../../utils';
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -50,17 +50,11 @@ const monthsInShort = [
   'Mar',
 ];
 const SalesDistribution = () => {
-  const [searchParams] = useSearchParams({
-    page: 1,
-    limit: 1000,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  });
 
   const chartRef = useRef(null); // Reference to the chart instance
 
   const { data: bookingData2, isLoading: isLoadingBookingData } = useBookingsNew(
-    searchParams.toString(),
+    serialize({ page: 1, limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' }),
   );
   const currentFinancialYear = date => {
     const year = date.getFullYear();

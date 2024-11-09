@@ -3,7 +3,7 @@ import { Button } from '@mantine/core';
 import PerformanceCard from '../../components/modules/newReports/performanceCard';
 import RevenueCards from '../../components/modules/newReports/RevenueCards';
 import { downloadExcel } from '../../apis/requests/report.requests';
-import { useDownloadExcel } from '../../apis/queries/report.queries';
+import { useDownloadExcel, useShareReport } from '../../apis/queries/report.queries';
 import { showNotification } from '@mantine/notifications';
 import TagwiseReport from '../../components/modules/newReports/TagwiseReport';
 import SalesDistribution from '../../components/modules/newReports/SalesDistribution';
@@ -21,37 +21,29 @@ import InvoiceAmountCollReport from '../../components/modules/newReports/Invoice
 import RevenueBreakup from '../../components/modules/newReports/RevenueBreakup';
 import CampaignCards from '../../components/modules/newReports/CampaingCards';
 import SalesOverview from '../../components/modules/newReports/SalesOverview';
-import html2pdf from 'html2pdf.js';
-import { useState } from 'react';
-import classNames from 'classnames';
+import { downloadPdf } from '../../utils';
 
 const OtherNewReports = () => {
   //For Pdf Download
-  const [isDownloadPdfLoading, setIsDownloadPdfLoading] = useState(false);
+  const { mutateAsync, isLoading: isDownloadLoading } = useShareReport();
 
-  const handleDownloadPdf = () => {
-    setIsDownloadPdfLoading(true);
-
-    const url = new URL(window.location);
-    url.searchParams.set('share', 'report');
-    window.history.pushState({}, '', url);
-
-    const element = document.getElementById('New_reports');
-
-    const date = new Date();
-    const month = date.toLocaleString('default', { month: 'long' }); 
-    const year = date.getFullYear(); 
-    const filename = `Financial Report ${month} ${year}.pdf`;
-
-    html2pdf()
-      .set({ filename, html2canvas: { scale: 2 } })
-      .from(element)
-      .save()
-      .finally(() => {
-        setIsDownloadPdfLoading(false);
-        url.searchParams.delete('share');
-        window.history.pushState({}, '', url);
-      });
+  const handleDownloadPdf = async () => {
+    const activeUrl = new URL(window.location.href);
+    activeUrl.searchParams.append('share', 'report');
+    await mutateAsync(
+      { url: activeUrl.toString() },
+      {
+        onSuccess: data => {
+          showNotification({
+            title: 'Report has been downloaded successfully',
+            color: 'green',
+          });
+          if (data?.link) {
+            downloadPdf(data.link);
+          }
+        },
+      },
+    );
   };
 
   // For Excel Download
@@ -81,7 +73,6 @@ const OtherNewReports = () => {
       },
     );
   };
-  const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
   return (
     <div className="overflow-y-auto p-3 col-span-10 overflow-hidden">
@@ -91,8 +82,8 @@ const OtherNewReports = () => {
             leftIcon={<Download size="20" color="white" />}
             className="primary-button mx-3 pdf_download_button"
             onClick={handleDownloadPdf}
-            loading={isDownloadPdfLoading}
-            disabled={isDownloadPdfLoading}
+            loading={isDownloadLoading}
+            disabled={isDownloadLoading}
           >
             Download PDF
           </Button>

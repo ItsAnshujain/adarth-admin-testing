@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Line, Pie } from 'react-chartjs-2';
 import dayjs from 'dayjs';
-import { useSearchParams } from 'react-router-dom';
-import { Menu, Button, Loader } from '@mantine/core';
-import DateRangeSelector from '../../DateRangeSelector';
+import { Button, Loader } from '@mantine/core';
 import classNames from 'classnames';
 import { v4 as uuidv4 } from 'uuid';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
@@ -163,18 +161,12 @@ export const pieData = {
   ],
 };
 const RevenueAndIndustriGraph = () => {
-  const [searchParams] = useSearchParams({
-    page: 1,
-    limit: 1000,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  });
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
-  const chartRef = useRef(null); // Reference to the chart instance
+  const chartRef = useRef(null); 
 
   const { data: bookingData, isLoading: isLoadingBookingData } = useBookings(
-    searchParams.toString(),
+    serialize({ page: 1, limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' }),
   );
 
   const [startDate, setStartDate] = useState(financialStartDate);
@@ -477,7 +469,7 @@ const RevenueAndIndustriGraph = () => {
                     plugins={[ChartDataLabels]}
                   />
                 </div>
-                <p className="text-center text-sm">{!isReport ? `${timeLegend[groupBy]}`  : ''}</p>
+                <p className="text-center text-sm">{!isReport ? `${timeLegend[groupBy]}` : ''}</p>
               </div>
             )}
           </div>

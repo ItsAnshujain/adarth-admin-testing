@@ -10,16 +10,15 @@ import InProgressIcon from '../../../assets/git-branch.svg';
 import classNames from 'classnames';
 import html2pdf from 'html2pdf.js';
 import { Download } from 'react-feather';
+import { serialize } from '../../../utils';
 const PerformanceCard = () => {
-  const fixedSearchParams = new URLSearchParams({
-    limit: 10000,
-    page: 1,
-    sortOrder: 'desc',
-    sortBy: 'revenue',
-  });
-
   const { data: inventoryReportList, isLoading: inventoryReportListLoading } =
-    useFetchInventoryReportList(fixedSearchParams.toString());
+    useFetchInventoryReportList(serialize({
+      limit: 10000,
+      page: 1,
+      sortOrder: 'desc',
+      sortBy: 'revenue',
+    }));
 
   const topSpaceByBookings = inventoryReportList?.docs.reduce((prev, curr) =>
     prev.totalBookings > curr.totalBookings ? prev : curr,

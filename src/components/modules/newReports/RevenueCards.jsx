@@ -3,35 +3,28 @@ import { Text, Image, Button } from '@mantine/core';
 import OngoingOrdersIcon from '../../../assets/ongoing-orders.svg';
 import InitiateDiscussionIcon from '../../../assets/message-share.svg';
 import TotalRevenueIcon from '../../../assets/total-revenue.svg';
-import { useSearchParams } from 'react-router-dom';
 import { useBookingReportByRevenueStats, useBookings } from '../../../apis/queries/booking.queries';
 import dayjs from 'dayjs';
-import isBetween from 'dayjs/plugin/isBetween'; // Import the isBetween plugin
-import advancedFormat from 'dayjs/plugin/advancedFormat'; // Optional: for better date formatting
+import isBetween from 'dayjs/plugin/isBetween';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
 import toIndianCurrency from '../../../utils/currencyFormat';
 import { Download } from 'react-feather';
 import html2pdf from 'html2pdf.js';
-
 import ProposalSentIcon from '../../../assets/proposal-sent.svg';
-dayjs.extend(isBetween); // Extend dayjs with the isBetween plugin
-dayjs.extend(advancedFormat); // Optional: For advanced date formatting
 import { useFetchProposals } from '../../../apis/queries/proposal.queries';
-const RevenueCards = () => {
-  const [searchParams] = useSearchParams({
-    page: 1,
-    limit: 1000,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  });
+import { serialize } from '../../../utils';
+dayjs.extend(isBetween);
+dayjs.extend(advancedFormat);
 
+const RevenueCards = () => {
   const {
     data: bookingData,
     isLoading: isLoadingBookingData,
     error,
-  } = useBookings(searchParams.toString());
+  } = useBookings(serialize({ page: 1, limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' }));
 
   const { data: revenueData } = useBookingReportByRevenueStats();
-  // Helper function to calculate MTD revenue and range
+
   const getMonthToDateRevenue = bookings => {
     const startOfMonth = dayjs().startOf('month');
     const endOfToday = dayjs().endOf('day');
@@ -47,13 +40,12 @@ const RevenueCards = () => {
 
     return {
       totalRevenue,
-      dateRange: `${startOfMonth.format('D MMM, YYYY')} - ${endOfToday.format('D MMM, YYYY')}`, // Date range
+      dateRange: `${startOfMonth.format('D MMM, YYYY')} - ${endOfToday.format('D MMM, YYYY')}`,
     };
   };
 
-  // Helper function to calculate YTD revenue (from April 1st to today's date) and range
   const getYearToDateRevenue = bookings => {
-    const startOfFinancialYear = dayjs().month(3).startOf('month'); // April (month 3 in dayjs)
+    const startOfFinancialYear = dayjs().month(3).startOf('month');
     const endOfToday = dayjs().endOf('day');
 
     const filteredBookings = bookings.filter(booking =>
@@ -125,16 +117,8 @@ const RevenueCards = () => {
       });
   };
 
-  // proposals data
-  const [searchParams4, setSearchParams4] = useSearchParams({
-    page: 1,
-    limit: 500,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  });
-
   const { data: proposalsData, isLoading: isLoadingProposalsData } = useFetchProposals(
-    searchParams4.toString(),
+    serialize({ page: 1, limit: 500, sortBy: 'createdAt', sortOrder: 'desc' }),
   );
 
   const proposalsArray = Array.isArray(proposalsData?.docs) ? proposalsData.docs : [];
@@ -144,7 +128,6 @@ const RevenueCards = () => {
 
   const totalPriceInLacs = (totalPrice / 100000).toFixed(2);
 
-  // proposals data
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
   return (

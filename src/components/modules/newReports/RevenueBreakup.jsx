@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Text, Image, Loader, Button } from '@mantine/core';
-import { useSearchParams } from 'react-router-dom';
 import { useBookingsNew } from '../../../apis/queries/booking.queries';
 import { Doughnut } from 'react-chartjs-2';
 import { Download } from 'react-feather';
@@ -10,6 +9,7 @@ import UpcomingOrdersIcon from '../../../assets/upcoming-orders.svg';
 import CompletedOrdersIcon from '../../../assets/completed-orders.svg';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import dayjs from 'dayjs';
+import { serialize } from '../../../utils';
 
 const customLinesPlugin = {
   id: 'customLines',
@@ -47,18 +47,12 @@ const customLinesPlugin = {
   },
 };
 const RevenueBreakup = () => {
-  const [searchParams] = useSearchParams({
-    page: 1,
-    limit: 1000,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  });
 
   const {
     data: bookingData2,
     isLoading: isLoadingBookingData,
     error,
-  } = useBookingsNew(searchParams.toString());
+  } = useBookingsNew(serialize({ page: 1, limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' }));
 
   const chartRef = useRef(null);
 
@@ -114,9 +108,8 @@ const RevenueBreakup = () => {
   );
   const config = {
     options: {
-      
       responsive: true,
-      
+
       plugins: {
         datalabels: {
           formatter: value => {
@@ -129,12 +122,12 @@ const RevenueBreakup = () => {
           color: '#000',
           anchor: 'end',
           align: 'end',
-          offset:0.5
+          offset: 0.5,
         },
       },
       layout: {
         padding: {
-          top:2,
+          top: 2,
           bottom: 15,
           // left: 15,
           right: 15,

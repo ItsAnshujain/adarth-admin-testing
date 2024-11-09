@@ -23,7 +23,7 @@ import {
   Chart,
 } from 'chart.js';
 import { useBookings, useBookingsNew } from '../../../apis/queries/booking.queries';
-import { monthsInShort } from '../../../utils';
+import { monthsInShort, serialize } from '../../../utils';
 import html2pdf from 'html2pdf.js';
 import { Download } from 'react-feather';
 ChartJS.register(
@@ -62,18 +62,12 @@ const list = [
 ];
 
 const CategoryWiseReport = () => {
-  const [searchParams] = useSearchParams({
-    page: 1,
-    limit: 1000,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  });
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
   const chartRef = useRef(null); // Reference to the chart instance
 
   const { data: bookingData2, isLoading: isLoadingBookingData } = useBookingsNew(
-    searchParams.toString(),
+    serialize({ page: 1, limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' }),
   );
   const [startDate1, setStartDate1] = useState(null);
   const [endDate1, setEndDate1] = useState(null);
@@ -299,7 +293,7 @@ const CategoryWiseReport = () => {
     setSelectedCategory('Billboard');
     setStartDate1(null);
     setEndDate1(null);
-    setCategoryList([]); 
+    setCategoryList([]);
   };
 
   const handleMenuItemClick4 = value => {
@@ -329,7 +323,10 @@ const CategoryWiseReport = () => {
       });
   };
   return (
-    <div className={classNames('p-6 w-[45rem]', !isReport ? '' : ' pt-8')} id="Category_distribution">
+    <div
+      className={classNames('p-6 w-[45rem]', !isReport ? '' : ' pt-8')}
+      id="Category_distribution"
+    >
       <div className="flex justify-between">
         <p className="font-bold "> Category Wise Distribution</p>
         {isReport ? null : (

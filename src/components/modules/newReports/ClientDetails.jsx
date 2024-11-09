@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import dayjs from 'dayjs';
-import { useSearchParams } from 'react-router-dom';
 import { Menu, Button } from '@mantine/core';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 dayjs.extend(quarterOfYear);
@@ -17,11 +16,10 @@ import {
   LogarithmicScale,
 } from 'chart.js';
 import { useBookingsNew } from '../../../apis/queries/booking.queries';
-import Table from '../../Table/Table';
 import Table1 from '../../Table/Table1';
-import classNames from 'classnames';
 import { Download } from 'react-feather';
 import html2pdf from 'html2pdf.js';
+import { serialize } from '../../../utils';
 
 ChartJS.register(
   ArcElement,
@@ -45,16 +43,11 @@ const list2 = [
   { label: 'Old Retention', value: 'oldRetention' },
 ];
 const ClientDetails = () => {
-  const [searchParams] = useSearchParams({
-    page: 1,
-    limit: 1000,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  });
+
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
   const { data: bookingData2, isLoading: isLoadingBookingData } = useBookingsNew(
-    searchParams.toString(),
+    serialize({ page: 1, limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' }),
   );
 
   // client details

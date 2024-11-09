@@ -18,17 +18,11 @@ import { Download } from 'react-feather';
 import html2pdf from 'html2pdf.js';
 
 const CampaignDetails = () => {
-  const [searchParams] = useSearchParams({
-    page: 1,
-    limit: 1000,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  });
 
   const { data: bookingData, isLoading: isLoadingBookingData } = useBookings(
-    searchParams.toString(),
+    serialize({ page: 1, limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' }),
   );
-  // existing campagin details
+
   const { data: campaignStatus } = useFetchMasters(
     serialize({
       type: 'booking_campaign_status',
@@ -174,16 +168,14 @@ const CampaignDetails = () => {
   const sortedBookingData = useMemo(() => {
     if (!bookingData?.docs) return [];
 
-    // Safely sort the data, handling undefined campaign or totalPrice values
     return bookingData.docs.sort((a, b) => {
-      const aPrice = a?.campaign?.totalPrice || 0; // Use 0 if campaign or totalPrice is missing
+      const aPrice = a?.campaign?.totalPrice || 0; 
       const bPrice = b?.campaign?.totalPrice || 0;
 
-      return bPrice - aPrice; // Sort in descending order
+      return bPrice - aPrice; 
     });
   }, [bookingData?.docs]);
 
-  // existing campagin details
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
   //For Pdf Download
 

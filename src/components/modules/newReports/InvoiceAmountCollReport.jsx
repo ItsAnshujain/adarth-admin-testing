@@ -1,9 +1,7 @@
 import { useMemo, useState } from 'react';
 import dayjs from 'dayjs';
-import { useSearchParams } from 'react-router-dom';
 import { Menu, Button } from '@mantine/core';
 import DateRangeSelector from '../../../components/DateRangeSelector';
-import { useFetchInventory } from '../../../apis/queries/inventory.queries';
 import classNames from 'classnames';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
@@ -23,7 +21,7 @@ import {
 import { useBookings } from '../../../apis/queries/booking.queries';
 import GaugeChart from './GaugeChart';
 import InvoiceReportChart from './InvoiceReportChart';
-import { generateSlNo } from '../../../utils';
+import { generateSlNo, serialize } from '../../../utils';
 import toIndianCurrency from '../../../utils/currencyFormat';
 import Table1 from '../../Table/Table1';
 import { Download } from 'react-feather';
@@ -58,17 +56,15 @@ const list1 = [
   { label: 'Custom Date Range', value: 'customDate' },
 ];
 const InvoiceAmountCollReport = () => {
-  const [searchParams] = useSearchParams({
-    page: 1,
-    limit: 1000,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  });
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
-
   const { data: bookingData, isLoading: isLoadingBookingData } = useBookings(
-    searchParams.toString(),
+    serialize({
+      page: 1,
+      limit: 1000,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    }),
   );
   const [startDate2, setStartDate2] = useState(null);
   const [endDate2, setEndDate2] = useState(null);
@@ -77,12 +73,12 @@ const InvoiceAmountCollReport = () => {
   threeMonthsAgo.setMonth(today.getMonth() - 3);
   const [activeView1, setActiveView1] = useState('currentYear');
 
-  const formatMonthYear1 = (monthYearKey) => {
+  const formatMonthYear1 = monthYearKey => {
     const [year, month] = monthYearKey.split('-').map(Number);
     const monthName = new Date(year, month - 1).toLocaleString('default', { month: 'short' });
-    
+
     return `${monthName} ${year}`;
-};
+  };
 
   const getFinancialYear = date => {
     const year = date.getFullYear();
@@ -266,7 +262,13 @@ const InvoiceAmountCollReport = () => {
       });
   };
   return (
-    <div className={classNames("col-span-12 lg:col-span-10 p-5 overflow-hidden", !isReport?'':'pt-12')} id="invoice_report">
+    <div
+      className={classNames(
+        'col-span-12 lg:col-span-10 p-5 overflow-hidden',
+        !isReport ? '' : 'pt-12',
+      )}
+      id="invoice_report"
+    >
       <div className="flex justify-between">
         <p className="font-bold ">Invoice and amount collected Report</p>
         {isReport ? null : (
@@ -286,53 +288,53 @@ const InvoiceAmountCollReport = () => {
         This report provide insights into the invoice raised, amount collected and outstanding by
         table, graph and chart.
       </p>
-      
+
       <div className="flex flex-col lg:flex-row gap-10  overflow-x-auto">
         <div className="overflow-y-auto w-[600px]">
-        <div className="flex pb-4">
-        <div>
-          <Menu shadow="md" width={200}>
-            <Menu.Target>
-              <Button className="secondary-button">
-                View By: {viewBy1[activeView1] || 'Select'}
-              </Button>
-            </Menu.Target>
-            <Menu.Dropdown>
-              {list1.map(({ label, value }) => (
-                <Menu.Item
-                  key={value}
-                  onClick={() => handleMenuItemClick1(value)}
-                  className={classNames(activeView1 === value && 'text-purple-450 font-medium')}
-                >
-                  {label}
-                </Menu.Item>
-              ))}
-            </Menu.Dropdown>
-          </Menu>
-        </div>
+          <div className="flex pb-4">
+            <div>
+              <Menu shadow="md" width={200}>
+                <Menu.Target>
+                  <Button className="secondary-button">
+                    View By: {viewBy1[activeView1] || 'Select'}
+                  </Button>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  {list1.map(({ label, value }) => (
+                    <Menu.Item
+                      key={value}
+                      onClick={() => handleMenuItemClick1(value)}
+                      className={classNames(activeView1 === value && 'text-purple-450 font-medium')}
+                    >
+                      {label}
+                    </Menu.Item>
+                  ))}
+                </Menu.Dropdown>
+              </Menu>
+            </div>
 
-        {activeView1 && !isReport && (
-          <Button onClick={handleReset1} className="mx-2 secondary-button">
-            Reset
-          </Button>
-        )}
-        {
-          <div>
-            {' '}
-            <p className="text-sm text-gray-600 italic ml-[50px]"> (Amounts in Lacs)</p>
+            {activeView1 && !isReport && (
+              <Button onClick={handleReset1} className="mx-2 secondary-button">
+                Reset
+              </Button>
+            )}
+            {
+              <div>
+                {' '}
+                <p className="text-sm text-gray-600 italic ml-[50px]"> (Amounts in Lacs)</p>
+              </div>
+            }
           </div>
-        }
-      </div>
-      {activeView1 === 'customDate' && (
-        <div className="flex flex-col items-start space-y-4 py-2 ">
-          <DateRangeSelector
-            dateValue={[startDate2, endDate2]}
-            onChange={onDateChange5}
-            minDate={threeMonthsAgo}
-            maxDate={today}
-          />
-        </div>
-      )}
+          {activeView1 === 'customDate' && (
+            <div className="flex flex-col items-start space-y-4 py-2 ">
+              <DateRangeSelector
+                dateValue={[startDate2, endDate2]}
+                onChange={onDateChange5}
+                minDate={threeMonthsAgo}
+                maxDate={today}
+              />
+            </div>
+          )}
           <Table1
             data={groupedData1 || []}
             COLUMNS={column1}

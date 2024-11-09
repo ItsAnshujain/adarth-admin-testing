@@ -1,25 +1,22 @@
 import { useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import {
   useFetchInventory,
 } from '../../../apis/queries/inventory.queries';
-import { generateSlNo } from '../../../utils';
+import { generateSlNo, serialize } from '../../../utils';
 import Table1 from '../../Table/Table1';
 import html2pdf from 'html2pdf.js';
 import { Button } from '@mantine/core';
 import { Download } from 'react-feather';
 
 const PriceTradedMargin = () => {
-  const [searchParams3, setSearchParams3] = useSearchParams({
-    page: 1,
-    limit: 500,
-    sortBy: 'basicInformation.spaceName',
-    sortOrder: 'desc',
-    isActive: true,
-  });
-
   const { data: inventoryData, isLoading: isLoadingInventoryData } = useFetchInventory(
-    searchParams3.toString(),
+    serialize({
+      page: 1,
+      limit: 500,
+      sortBy: 'basicInformation.spaceName',
+      sortOrder: 'desc',
+      isActive: true,
+    }),
   );
 
   const processedData = useMemo(() => {

@@ -23,7 +23,7 @@ import {
   Chart,
 } from 'chart.js';
 import { useBookings } from '../../../apis/queries/booking.queries';
-import { monthsInShort } from '../../../utils';
+import { monthsInShort, serialize } from '../../../utils';
 import html2pdf from 'html2pdf.js';
 import { Download } from 'react-feather';
 ChartJS.register(
@@ -62,18 +62,15 @@ const list = [
 ];
 
 const RevenueDistribution = () => {
-  const [searchParams] = useSearchParams({
-    page: 1,
-    limit: 1000,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  });
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
-  const chartRef = useRef(null); // Reference to the chart instance
+  const chartRef = useRef(null); 
 
   const { data: bookingData, isLoading: isLoadingBookingData } = useBookings(
-    searchParams.toString(),
+    serialize({ page: 1,
+      limit: 1000,
+      sortBy: 'createdAt',
+      sortOrder: 'desc'})
   );
 
   const [filter, setFilter] = useState('currentYear');

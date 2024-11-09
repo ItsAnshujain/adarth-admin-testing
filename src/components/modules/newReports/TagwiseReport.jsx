@@ -26,6 +26,7 @@ import Table from '../../Table/Table';
 import Table1 from '../../Table/Table1';
 import { Download } from 'react-feather';
 import html2pdf from 'html2pdf.js';
+import { serialize } from '../../../utils';
 
 ChartJS.register(
   ArcElement,
@@ -71,16 +72,10 @@ const list3 = [
   { label: 'Profitability', value: 'profitability' },
 ];
 const TagwiseReport = () => {
-  const [searchParams] = useSearchParams({
-    page: 1,
-    limit: 1000,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  });
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
   const { data: bookingData2, isLoading: isLoadingBookingData } = useBookingsNew(
-    searchParams.toString(),
+    serialize({ page: 1, limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' }),
   );
   const chartRef = useRef(null); // Reference to the chart instance
 

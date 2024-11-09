@@ -1,7 +1,6 @@
 import { useMemo, useRef, useState, useEffect } from 'react';
 import { Bar, Doughnut, Pie } from 'react-chartjs-2';
 import dayjs from 'dayjs';
-import { useSearchParams } from 'react-router-dom';
 import { Button, Loader } from '@mantine/core';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
@@ -23,6 +22,7 @@ import { useBookingsNew } from '../../../apis/queries/booking.queries';
 import classNames from 'classnames';
 import html2pdf from 'html2pdf.js';
 import { Download } from 'react-feather';
+import { serialize } from '../../../utils';
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -109,18 +109,15 @@ const clientTypeLabels = {
   directclient: 'Direct Client',
 };
 const SourceClientDistribution = () => {
-  const [searchParams] = useSearchParams({
-    page: 1,
-    limit: 1000,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  });
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
   const chartRef = useRef(null);
 
   const { data: bookingData, isLoading: isLoadingBookingData } = useBookingsNew(
-    searchParams.toString(),
+    serialize({ page: 1,
+      limit: 1000,
+      sortBy: 'createdAt',
+      sortOrder: 'desc'})
   );
 
   // Calculate Own and Traded Site Revenues
@@ -325,7 +322,7 @@ const SourceClientDistribution = () => {
         <p className="text-sm text-gray-600 italic py-4">
           This chart shows the revenue split between "Own Sites" and "Traded Sites".
         </p>
-        <div className=" mx-6">
+        <div className="w-72 justify-center mx-6">
           {isLoadingBookingData ? (
             <Loader className="mx-auto" />
           ) : (
@@ -364,7 +361,7 @@ const SourceClientDistribution = () => {
           This chart breaks down revenue by client type, including "Direct Clients", "Local
           Agencies", "National Agencies", and "Government".
         </p>
-        <div className="w-72 justify-center mx-40">
+        <div className="w-72 justify-center mx-6">
           {isLoadingBookingData ? (
             <Loader className="mx-auto" />
           ) : updatedClient && updatedClient.datasets[0].data.length > 0 ? (

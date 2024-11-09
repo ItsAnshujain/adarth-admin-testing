@@ -21,7 +21,7 @@ import {
   Chart,
 } from 'chart.js';
 import { useBookings, useBookingsNew } from '../../../apis/queries/booking.queries';
-import { monthsInShort } from '../../../utils';
+import { monthsInShort, serialize } from '../../../utils';
 import { Download } from 'react-feather';
 import html2pdf from 'html2pdf.js';
 ChartJS.register(
@@ -37,19 +37,13 @@ ChartJS.register(
   LogarithmicScale,
 );
 const SalesComparision = () => {
-  const chartRef = useRef(null); // Reference to the chart instance
-  const [searchParams] = useSearchParams({
-    page: 1,
-    limit: 1000,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  });
+  const chartRef = useRef(null); 
 
   const {
     data: bookingData,
     isLoading: isLoadingBookingData,
     error,
-  } = useBookings(searchParams.toString());
+  } = useBookings( serialize({ page: 1, limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' }),);
   const [salesData, setSalesData] = useState([]);
 
   const getCurrentYear = () => new Date().getFullYear();

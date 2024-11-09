@@ -7,6 +7,7 @@ import classNames from 'classnames';
 import { useTable } from 'react-table';
 import { Download } from 'react-feather';
 import html2pdf from 'html2pdf.js';
+import { serialize } from '../../../utils';
 const viewBy = {
   yearly: 'Yearly',
   halfYearly: 'Half Yearly',
@@ -25,15 +26,9 @@ const viewOptions = [
 ];
 
 const SalesOverview = () => {
-  const [searchParams] = useSearchParams({
-    page: 1,
-    limit: 1000,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  });
 
   const { data: bookingData, isLoading: isLoadingBookingData } = useBookingsNew(
-    searchParams.toString(),
+    serialize({ page: 1, limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' }),
   );
 
   const [startDate, setStartDate] = useState(null);
