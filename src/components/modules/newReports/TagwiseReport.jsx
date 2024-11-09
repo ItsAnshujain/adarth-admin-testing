@@ -1073,7 +1073,7 @@ const TagwiseReport = () => {
           />
         </div>
       </div>
-      <div className={classNames("px-5 md:col-span-12 lg:col-span-10 border-gray-450 overflow-auto", isReport?' col-span-8':' col-span-12')}>
+      <div className={classNames("px-5 md:col-span-12 lg:col-span-10 border-gray-450 overflow-auto", isReport?'w-[47rem]':'')}>
         <Table1
           COLUMNS={activeView5 === 'revenue' ? tableColumnsRevenue : tableColumnsProfitability}
           data={activeView5 === 'revenue' ? tableDataRevenue : tableDataProfitability}

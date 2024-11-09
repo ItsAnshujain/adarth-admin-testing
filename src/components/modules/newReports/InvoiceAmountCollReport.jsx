@@ -286,7 +286,7 @@ const InvoiceAmountCollReport = () => {
         table, graph and chart.
       </p>
 
-      <div className="flex flex-col lg:flex-row gap-10  overflow-x-auto">
+      <div className={classNames("flex lg:flex-row gap-10  overflow-x-auto", isReport?'flex-col':'flex-col ')}>
         <div className="overflow-y-auto w-[600px]">
           <div className="flex pb-4">
             <div>

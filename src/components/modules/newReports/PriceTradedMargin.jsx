@@ -1,12 +1,11 @@
 import { useMemo, useState } from 'react';
-import {
-  useFetchInventory,
-} from '../../../apis/queries/inventory.queries';
+import { useFetchInventory } from '../../../apis/queries/inventory.queries';
 import { generateSlNo, serialize } from '../../../utils';
 import Table1 from '../../Table/Table1';
 import html2pdf from 'html2pdf.js';
 import { Button } from '@mantine/core';
 import { Download } from 'react-feather';
+import classNames from 'classnames';
 
 const PriceTradedMargin = () => {
   const { data: inventoryData, isLoading: isLoadingInventoryData } = useFetchInventory(
@@ -140,27 +139,30 @@ const PriceTradedMargin = () => {
       });
   };
   return (
-    <div className="col-span-12 md:col-span-12 lg:col-span-10 overflow-y-auto p-5" id="TradedMargin_report">
-      <div className='flex justify-between'>
-      <p className="font-bold">Price and Traded Margin Report</p>
-      {isReport ? null : (
-            <div className=" ">
-              <Button
-                className="primary-button mx-3 pdf_download_button"
-                onClick={handleDownloadPdf}
-                loading={isDownloadPdfLoading}
-                disabled={isDownloadPdfLoading}
-              >
-                <Download size="20" color="white" />
-              </Button>
-            </div>
-          )}
+    <div
+      className="col-span-12 md:col-span-12 lg:col-span-10 overflow-y-auto p-5"
+      id="TradedMargin_report"
+    >
+      <div className="flex justify-between">
+        <p className="font-bold">Price and Traded Margin Report</p>
+        {isReport ? null : (
+          <div className=" ">
+            <Button
+              className="primary-button mx-3 pdf_download_button"
+              onClick={handleDownloadPdf}
+              loading={isDownloadPdfLoading}
+              disabled={isDownloadPdfLoading}
+            >
+              <Download size="20" color="white" />
+            </Button>
           </div>
+        )}
+      </div>
       <p className="text-sm text-gray-600 italic py-4">
         This report provide insights into the pricing trends, traded prices, and margins grouped by
         cities. (Amounts in Lacs)
       </p>
-      <div className="overflow-y-auto">
+      <div className={classNames("overflow-y-auto", isReport?'w-[40rem]':'')}>
         <Table1
           data={processedData || []}
           COLUMNS={columns3}

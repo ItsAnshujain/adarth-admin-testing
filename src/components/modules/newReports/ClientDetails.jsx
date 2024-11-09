@@ -20,6 +20,7 @@ import Table1 from '../../Table/Table1';
 import { Download } from 'react-feather';
 import html2pdf from 'html2pdf.js';
 import { serialize } from '../../../utils';
+import classNames from 'classnames';
 
 ChartJS.register(
   ArcElement,
@@ -43,7 +44,6 @@ const list2 = [
   { label: 'Old Retention', value: 'oldRetention' },
 ];
 const ClientDetails = () => {
-
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
   const { data: bookingData2, isLoading: isLoadingBookingData } = useBookingsNew(
@@ -177,11 +177,11 @@ const ClientDetails = () => {
       });
   };
   return (
-    <div className="flex flex-col col-span-10 overflow-x-hidden p-5" id='Client_details'>
+    <div className="flex flex-col col-span-10 overflow-x-hidden p-5" id="Client_details">
       <div className="">
-        <div className='flex justify-between'>
-        <p className="font-bold ">Client Details</p>
-        {isReport ? null : (
+        <div className="flex justify-between">
+          <p className="font-bold ">Client Details</p>
+          {isReport ? null : (
             <div className=" ">
               <Button
                 className="primary-button mx-3 pdf_download_button"
@@ -193,7 +193,7 @@ const ClientDetails = () => {
               </Button>
             </div>
           )}
-          </div>
+        </div>
         <p className="text-sm text-gray-600 italic py-4">
           This report shows the client details based on retention status.
         </p>
@@ -231,7 +231,7 @@ const ClientDetails = () => {
           </div>
         </div>
       </div>
-      <div className=" mt-5 col-span-12 md:col-span-12 lg:col-span-10 border-gray-450 overflow-auto">
+      <div className={classNames(" mt-5 col-span-12 md:col-span-12 lg:col-span-10 border-gray-450 overflow-auto", isReport?'w-[40rem]':'')}>
         <Table1
           COLUMNS={tableColumns4}
           data={tableData4}
