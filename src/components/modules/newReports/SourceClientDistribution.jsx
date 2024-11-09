@@ -297,10 +297,7 @@ const SourceClientDistribution = () => {
   };
   return (
     <div className={classNames('flex gap-8 pt-4', isReport ? 'flex-col' : '')}>
-      <div
-        className='flex flex-col mt-2 p-4  min-h-[200px]'
-        id="Source_Distribution"
-      >
+      <div className='flex flex-col mt-2 p-4  min-h-[200px]' id="Source_Distribution" >
         <div className="flex justify-between">
           <p className="font-bold">Source Distribution</p>
           {isReport ? null : (

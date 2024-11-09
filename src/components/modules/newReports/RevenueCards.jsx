@@ -132,7 +132,7 @@ const RevenueCards = () => {
 
   return (
     <>
-      <div className="overflow-y-auto px-5 pt-5 col-span-10 w-[65rem]" id="Revenue_cards">
+      <div className="px-5 pt-5" id="Revenue_cards">
         <div className="flex justify-between w-[47rem]">
           <p className="font-bold"> Revenue Cards</p>
           {isReport ? null : (
@@ -149,8 +149,8 @@ const RevenueCards = () => {
           )}
         </div>
         <p className="text-sm text-gray-600 italic py-4">This report shows total revenue Cards.</p>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="border rounded p-8 flex-1">
+        <div className="flex gap-4 mb-6">
+          <div className="border rounded p-8 pr-12">
             <Image src={TotalRevenueIcon} alt="folder" fit="contain" height={24} width={24} />
             <p className="my-2 text-sm font-light text-slate-400">Total Revenue (till date)</p>
             <p className="font-bold text-green-500">
@@ -158,7 +158,7 @@ const RevenueCards = () => {
             </p>
           </div>
           {cardData.map(({ title, data }) => (
-            <div className="border rounded p-8 flex-1" key={title}>
+            <div className="border rounded p-8 pr-12" key={title}>
               <Image src={data.icon} alt="icon" height={24} width={24} fit="contain" />
               <Text className="my-2 text-sm font-light text-slate-400">{title}</Text>
               <Text size="xs" weight="400">

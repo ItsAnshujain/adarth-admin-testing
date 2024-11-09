@@ -143,6 +143,10 @@ const OperationalCosts = () => {
   }, [chartLabels, chartData2]);
 
   const doughnutChartOptions = {
+    options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    radius:120,
     plugins: {
       legend: {
         display: true,
@@ -150,7 +154,7 @@ const OperationalCosts = () => {
         align: 'center',
         labels: {
           boxWidth: 20,
-          padding: 20,
+          // padding: 20,
         },
       },
       datalabels: {
@@ -161,7 +165,6 @@ const OperationalCosts = () => {
         },
         anchor: 'end',
         align: 'end',
-        offset: 10,
       },
       customLines: true,
       tooltip: {
@@ -176,19 +179,9 @@ const OperationalCosts = () => {
         },
       },
     },
-    layout: {
-      padding: {
-        left: 70,
-        right: 70,
-      },
-    },
-    elements: {
-      arc: {
-        borderWidth: 1,
-      },
-    },
+    
     cutout: '65%',
-    events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
+  }
   };
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
   //For Pdf Download
@@ -239,9 +232,8 @@ const OperationalCosts = () => {
         <div className="w-[600px]">
           <Doughnut
             data={doughnutChartData}
-            options={doughnutChartOptions}
-            height={550}
-            width={600}
+            options={doughnutChartOptions.options}
+            height={400}
             ref={chartRef}
             plugins={[ChartDataLabels, customLinesPlugin]} // Register the plugin here
           />

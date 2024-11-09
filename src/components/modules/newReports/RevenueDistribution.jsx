@@ -386,7 +386,7 @@ const RevenueDistribution = () => {
       });
   };
   return (
-    <div className='w-[48rem] p-6' id="Revenue_distribution">
+    <div className='w-[45rem] p-6' id="Revenue_distribution">
       <div className="flex justify-between">
         <p className="font-bold ">Revenue Distribution</p>
         {isReport ? null : (
@@ -437,14 +437,12 @@ const RevenueDistribution = () => {
         </div>
       )}
 
-      <div>
         <Line
           data={chartData1}
           options={chartOptions1}
           ref={chartRef}
           plugins={[ChartDataLabels]}
         />
-      </div>
     </div>
   );
 };
