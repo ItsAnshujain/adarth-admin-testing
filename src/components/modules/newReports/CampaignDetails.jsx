@@ -219,7 +219,7 @@ const CampaignDetails = () => {
           )}
         </div>
       </div>
-      <div className={classNames("px-5 col-span-12 md:col-span-12 lg:col-span-10 border-gray-450", isReport?'w-[50rem] overflow-hidden':'  overflow-auto')}>
+      <div className="px-5 col-span-12 md:col-span-12 lg:col-span-10 border-gray-450  overflow-auto">
         <Table1
           data={sortedBookingData} 
           COLUMNS={column5}

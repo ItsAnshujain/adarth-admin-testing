@@ -286,7 +286,7 @@ const InvoiceAmountCollReport = () => {
         table, graph and chart.
       </p>
 
-      <div className={classNames("flex lg:flex-row gap-10  overflow-x-auto", isReport?'flex-col':'flex-col ')}>
+      <div className={classNames("flex gap-10  overflow-x-auto", isReport?'flex-col':'flex-col lg:flex-row ')}>
         <div className="overflow-y-auto w-[600px]">
           <div className="flex pb-4">
             <div>
@@ -340,7 +340,7 @@ const InvoiceAmountCollReport = () => {
           />
         </div>
 
-        <div className="flex flex-col">
+        <div className="">
           <GaugeChart
             invoiceRaised={isFilterApplied ? invoiceRaised : 0}
             amountCollected={isFilterApplied ? amountCollected : 0}
@@ -348,7 +348,7 @@ const InvoiceAmountCollReport = () => {
         </div>
       </div>
       <div className={classNames('flex flex-col ', !isReport ? 'items-center' : '')}>
-        <p className="pt-4 pb-2 font-bold">Invoice Raised Vs Amount Collected Vs Outstanding</p>
+        <p className="pt-8 pb-2 font-bold">Invoice Raised Vs Amount Collected Vs Outstanding</p>
         <InvoiceReportChart
           data={activeView1 ? groupedData1 : []}
           chartDataLabels={[ChartDataLabels]}
