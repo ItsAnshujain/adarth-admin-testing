@@ -23,6 +23,7 @@ import { useBookingsNew } from '../../../apis/queries/booking.queries';
 import { Download } from 'react-feather';
 import html2pdf from 'html2pdf.js';
 import { serialize } from '../../../utils';
+import classNames from 'classnames';
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -344,7 +345,7 @@ const SalesDistribution = () => {
   };
   return (
     <div className="flex flex-col pt-4">
-      <div id="Sales_distribution" className='p-6'>
+      <div id="Sales_distribution" className={classNames('p-6', isReport?'w-[37rem]':'w-[47rem]')}>
         <div className="flex justify-between items-center">
           <p className="font-bold">Monthly Sales Distribution</p>
           {isReport ? null : (
@@ -368,19 +369,17 @@ const SalesDistribution = () => {
             <Loader />
           </div>
         ) : (
-          <div className="gap-10">
-            <div className="pt-4 w-[46rem]">
+            <div className="my-4">
               <Bar
                 ref={chartRef}
                 data={barData}
                 options={barChartOptions}
                 plugins={[ChartDataLabels]}
               />
-            </div>
           </div>
         )}
       </div>
-      <div className='px-6 pb-6' id="Percentage_contribution">
+      <div className={classNames('px-6 pb-6', isReport?'w-[37rem]':'w-[47rem]')} id="Percentage_contribution">
         <div className="flex justify-between items-center">
           <p className="font-bold">Monthly Percentage Contribution</p>
           {isReport ? null : (
@@ -404,8 +403,7 @@ const SalesDistribution = () => {
             <Loader />
           </div>
         ) : (
-          <div className="gap-10">
-            <div className="pt-4 w-[46rem]">
+            <div className="my-4">
               <Bar
                 ref={chartRef}
                 data={percentageBarData}
@@ -413,7 +411,6 @@ const SalesDistribution = () => {
                 plugins={[ChartDataLabels]}
               />
             </div>
-          </div>
         )}
       </div>
     </div>

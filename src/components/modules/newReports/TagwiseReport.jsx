@@ -971,7 +971,7 @@ const TagwiseReport = () => {
       className="col-span-12 lg:col-span-10 border-gray-450 overflow-y-auto"
       id="Tagfilter_distribution"
     >
-      <div className="px-5 pt-5 w-[47rem]">
+      <div className={classNames("px-5 pt-5", isReport?'w-[37rem]':'w-[47rem]')}>
         <div className="flex justify-between">
           <p className="font-bold "> Additional Filter Distribution</p>
           {isReport ? null : (
@@ -1073,7 +1073,7 @@ const TagwiseReport = () => {
           />
         </div>
       </div>
-      <div className="px-5 col-span-12 md:col-span-12 lg:col-span-10 border-gray-450 overflow-auto">
+      <div className={classNames("px-5 md:col-span-12 lg:col-span-10 border-gray-450 overflow-auto", isReport?' col-span-8':' col-span-12')}>
         <Table1
           COLUMNS={activeView5 === 'revenue' ? tableColumnsRevenue : tableColumnsProfitability}
           data={activeView5 === 'revenue' ? tableDataRevenue : tableDataProfitability}

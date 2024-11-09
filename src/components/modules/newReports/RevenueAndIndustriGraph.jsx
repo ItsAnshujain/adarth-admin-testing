@@ -422,8 +422,8 @@ const RevenueAndIndustriGraph = () => {
   return (
     <div className={classNames('overflow-y-auto overflow-x-hidden')}>
         <div className={classNames('flex gap-8', isReport ? 'flex-col' : '')}>
-          <div className="w-[38rem] flex flex-col justify-between pl-5" id="Revenue_graph">
-            <div className="flex justify-between items-center">
+          <div className={classNames("flex flex-col justify-between pl-5", isReport?'w-[35rem]':'w-[40rem]')} id="Revenue_graph">
+            <div className="flex justify-between">
               <p className="font-bold">Revenue Graph</p>
               {isReport ? null : (
                 <div className=" ">

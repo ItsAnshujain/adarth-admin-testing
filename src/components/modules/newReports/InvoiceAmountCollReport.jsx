@@ -352,6 +352,8 @@ const InvoiceAmountCollReport = () => {
         <InvoiceReportChart
           data={activeView1 ? groupedData1 : []}
           chartDataLabels={[ChartDataLabels]}
+          isReport={isReport}
+          
         />{' '}
       </div>
     </div>

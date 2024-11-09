@@ -324,7 +324,7 @@ const CategoryWiseReport = () => {
   };
   return (
     <div
-      className='p-6 w-[38rem]'
+      className={classNames('p-6', isReport?'w-[37rem]':'w-[45rem]')}
       id="Category_distribution"
     >
       <div className="flex justify-between">

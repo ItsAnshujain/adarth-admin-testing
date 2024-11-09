@@ -24,6 +24,7 @@ import { useBookings, useBookingsNew } from '../../../apis/queries/booking.queri
 import { monthsInShort, serialize } from '../../../utils';
 import { Download } from 'react-feather';
 import html2pdf from 'html2pdf.js';
+import classNames from 'classnames';
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -235,7 +236,7 @@ const SalesComparision = () => {
       });
   };
   return (
-    <div className="flex px-6 flex-col " id="Sales_comparision">
+    <div className={classNames("flex px-6 flex-col ", isReport?'w-[37rem]':'w-[47rem]')} id="Sales_comparision">
       <div className="flex justify-between items-center">
         <p className="font-bold"> Sales Comparison</p>
         {isReport ? null : (
@@ -261,15 +262,13 @@ const SalesComparision = () => {
       ) : (
         <div className="">
           {salesData.length > 0 ? (
-            <div className=" gap-10 ">
-              <div className="pt-4 w-[46rem]">
+              <div className="my-4">
                 <Bar
                   ref={chartRef}
                   data={combinedChartData}
                   options={combinedChartOptions}
                   plugins={[ChartDataLabels]}
                 />
-              </div>
             </div>
           ) : (
             <p className="text-center text-gray-600">No data available.</p>

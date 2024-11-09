@@ -24,6 +24,7 @@ import { serialize } from '../../../utils';
 import { Download } from 'react-feather';
 import { Button } from '@mantine/core';
 import html2pdf from 'html2pdf.js';
+import classNames from 'classnames';
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -229,7 +230,7 @@ const OperationalCosts = () => {
         <p className="text-sm text-gray-600 italic pt-4">
           This chart displays the breakdown of operational costs by different cost types.
         </p>
-        <div className="w-[600px]">
+        <div className={classNames(isReport?'w-[500px]':'w-[600px]')}>
           <Doughnut
             data={doughnutChartData}
             options={doughnutChartOptions.options}

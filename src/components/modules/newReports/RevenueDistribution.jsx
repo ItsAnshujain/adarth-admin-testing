@@ -386,7 +386,7 @@ const RevenueDistribution = () => {
       });
   };
   return (
-    <div className={classNames('p-6', isReport?'w-[38rem]':'w-[45rem]')} id="Revenue_distribution">
+    <div className={classNames('p-6', isReport?'w-[38rem]':'w-[48rem]')} id="Revenue_distribution">
       <div className="flex justify-between">
         <p className="font-bold ">Revenue Distribution</p>
         {isReport ? null : (

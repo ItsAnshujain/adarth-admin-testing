@@ -12,6 +12,7 @@ import {
 } from 'chart.js';
 import { Chart } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels'; // Import the datalabels plugin
+import classNames from 'classnames';
 
 // Register only necessary components
 ChartJS.register(
@@ -25,7 +26,7 @@ ChartJS.register(
   Legend
 );
 
-const InvoiceReportChart = ({ data, chartDataLabels }) => {
+const InvoiceReportChart = ({ data, chartDataLabels , isReport}) => {
   const chartData = {
     labels: data.length > 0 ? data.map(item => item.month) : ['No Data'],
     datasets: data.length > 0
@@ -120,7 +121,7 @@ const InvoiceReportChart = ({ data, chartDataLabels }) => {
   };
 
   return (
-      <div className="w-[800px] h-[400px]">
+      <div className={classNames(!isReport?"w-[800px] h-[400px]":"w-[600px] h-[300px]")}>
         <Chart type="bar" data={chartData} options={chartOptions} plugins={[ChartDataLabels]} /> {/* Use datalabels plugin */}
       </div>
   );
