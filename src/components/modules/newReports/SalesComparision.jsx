@@ -20,7 +20,7 @@ import {
   LogarithmicScale,
   Chart,
 } from 'chart.js';
-import { useBookings, useBookingsNew } from '../../../apis/queries/booking.queries';
+import { useBookings } from '../../../apis/queries/booking.queries';
 import { monthsInShort, serialize } from '../../../utils';
 import { Download } from 'react-feather';
 import html2pdf from 'html2pdf.js';

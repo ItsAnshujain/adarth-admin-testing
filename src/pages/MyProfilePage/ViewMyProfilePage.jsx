@@ -33,7 +33,7 @@ const ViewMyProfilePage = () => {
       },
       ...modalConfig,
     });
-
+console.log("user data", data)
   useEffect(() => {
     if (data) {
       const finalObject = {};

@@ -95,16 +95,22 @@ const SidebarContent = ({ className }) => {
         icon: CampaignIcon,
         acceptedRoles: [ROLES.ADMIN],
       },
+      // {
+      //   label: 'Reports',
+      //   path: '/reports',
+      //   nested: [
+      //     { label: 'Campaign Reports', subPath: '/campaign' },
+      //     { label: 'Revenue Reports', subPath: '/revenue' },
+      //     { label: 'Inventory Reports', subPath: '/inventories' },
+      //   ],
+      //   icon: ReportIcon,
+      //   acceptedRoles: [ROLES.ADMIN, ROLES.MANAGEMENT, ROLES.SUPERVISOR],
+      // },
       {
         label: 'Reports',
-        path: '/reports',
-        nested: [
-          { label: 'Campaign Reports', subPath: '/campaign' },
-          { label: 'Revenue Reports', subPath: '/revenue' },
-          { label: 'Inventory Reports', subPath: '/inventories' },
-        ],
+        path: '/newReports',
         icon: ReportIcon,
-        acceptedRoles: [ROLES.ADMIN, ROLES.MANAGEMENT, ROLES.SUPERVISOR],
+        acceptedRoles: [ROLES.ADMIN, ROLES.MANAGEMENT, ROLES.SUPERVISOR, ROLES.ASSOCIATE],
       },
       {
         label: 'Finances',
@@ -125,36 +131,8 @@ const SidebarContent = ({ className }) => {
         icon: LeadsIcon,
         acceptedRoles: [ROLES.ADMIN, ROLES.MANAGEMENT, ROLES.SUPERVISOR, ROLES.ASSOCIATE],
       },
-      {
-        label: 'Reports_new',
-        path: '/newReports',
-        icon: ReportIcon,
-        acceptedRoles: [ROLES.ADMIN, ROLES.MANAGEMENT, ROLES.SUPERVISOR, ROLES.ASSOCIATE],
-      },
-      // {
-      //   label: 'Ranking_report',
-      //   path: '/performanceReport',
-      //   icon: ReportIcon,
-      //   acceptedRoles: [ROLES.ADMIN, ROLES.MANAGEMENT, ROLES.SUPERVISOR, ROLES.ASSOCIATE],
-      // },
-      // {
-      //   label: 'Client_Details',
-      //   path: '/tagsWiseReport',
-      //   icon: ReportIcon,
-      //   acceptedRoles: [ROLES.ADMIN, ROLES.MANAGEMENT, ROLES.SUPERVISOR, ROLES.ASSOCIATE],
-      // },
-      // {
-      //   label: 'mediawiseRepo',
-      //   path: '/mediaWiseReport',
-      //   icon: ReportIcon,
-      //   acceptedRoles: [ROLES.ADMIN, ROLES.MANAGEMENT, ROLES.SUPERVISOR, ROLES.ASSOCIATE],
-      // },
-      // {
-      //   label: 'SampleRepo',
-      //   path: '/sampleReport',
-      //   icon: ReportIcon,
-      //   acceptedRoles: [ROLES.ADMIN, ROLES.MANAGEMENT, ROLES.SUPERVISOR, ROLES.ASSOCIATE],
-      // },
+      
+    
     ],
     [isMasterLoaded],
   );

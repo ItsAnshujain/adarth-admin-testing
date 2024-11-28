@@ -10,7 +10,6 @@ import { useLogin } from '../apis/queries/auth.queries';
 import useUserStore from '../store/user.store';
 import ControlledPasswordInput from '../components/shared/FormInputs/Controlled/ControlledPasswordInput';
 import ControlledTextInput from '../components/shared/FormInputs/Controlled/ControlledTextInput';
-const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 const schema = yup.object({
   email: yup.string().trim().required('Email is required').email('Invalid Email'),

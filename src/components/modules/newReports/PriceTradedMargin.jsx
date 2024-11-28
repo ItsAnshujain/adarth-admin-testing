@@ -17,6 +17,7 @@ const PriceTradedMargin = () => {
       isActive: true,
     }),
   );
+  console.log("inventory data", inventoryData)
 
   const processedData = useMemo(() => {
     if (!inventoryData?.docs?.length) return [];

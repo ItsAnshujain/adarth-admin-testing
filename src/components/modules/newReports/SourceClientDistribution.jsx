@@ -319,6 +319,8 @@ const SourceClientDistribution = () => {
         <div className="w-72 justify-center mx-6">
           {isLoadingBookingData ? (
             <Loader className="mx-auto" />
+          ) : printSitesData.ownSiteRevenue === 0 && printSitesData.tradedSiteRevenue === 0 ? (
+            <p className="text-center">NA</p>
           ) : (
             <Doughnut
               options={config.options}

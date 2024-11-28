@@ -1,13 +1,7 @@
 import { useMemo, useState } from 'react';
-import { Line } from 'react-chartjs-2';
 import dayjs from 'dayjs';
-import { useSearchParams } from 'react-router-dom';
 import { Menu, Button, MultiSelect, Text } from '@mantine/core';
-import DateRangeSelector from '../../../components/DateRangeSelector';
-import { useDistinctAdditionalTags } from '../../../apis/queries/inventory.queries';
-import classNames from 'classnames';
-import quarterOfYear from 'dayjs/plugin/quarterOfYear';
-import { useBookings, useBookingsNew } from '../../../apis/queries/booking.queries';
+import { useBookings } from '../../../apis/queries/booking.queries';
 import { useFetchMasters } from '../../../apis/queries/masters.queries';
 import { generateSlNo, serialize } from '../../../utils';
 import { Link } from 'react-router-dom';

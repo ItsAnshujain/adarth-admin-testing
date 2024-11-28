@@ -1,7 +1,5 @@
-import { useEffect } from 'react';
 import { Text, Image } from '@mantine/core';
 import { useSearchParams } from 'react-router-dom';
-import { useBookingsNew } from '../../../apis/queries/booking.queries';
 import { useFetchProposals } from '../../../apis/queries/proposal.queries';
 
 import ProposalSentIcon from '../../../assets/proposal-sent.svg';
@@ -9,7 +7,7 @@ const ProposalDetails = () => {
   // proposals data
   const [searchParams4, setSearchParams4] = useSearchParams({
     page: 1,
-    limit: 500,
+    limit: 1000,
     sortBy: 'createdAt',
     sortOrder: 'desc',
   });

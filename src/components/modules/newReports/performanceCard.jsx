@@ -14,7 +14,7 @@ import { serialize } from '../../../utils';
 const PerformanceCard = () => {
   const { data: inventoryReportList, isLoading: inventoryReportListLoading } =
     useFetchInventoryReportList(serialize({
-      limit: 10000,
+      limit: 1000,
       page: 1,
       sortOrder: 'desc',
       sortBy: 'revenue',

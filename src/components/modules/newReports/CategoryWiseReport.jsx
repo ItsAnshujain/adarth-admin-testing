@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
 import dayjs from 'dayjs';
-import { useSearchParams } from 'react-router-dom';
 import { Menu, Button } from '@mantine/core';
 import DateRangeSelector from '../../DateRangeSelector';
 import classNames from 'classnames';
@@ -22,8 +21,8 @@ import {
   LogarithmicScale,
   Chart,
 } from 'chart.js';
-import { useBookings, useBookingsNew } from '../../../apis/queries/booking.queries';
-import { monthsInShort, serialize } from '../../../utils';
+import {  useBookingsNew } from '../../../apis/queries/booking.queries';
+import {  serialize } from '../../../utils';
 import html2pdf from 'html2pdf.js';
 import { Download } from 'react-feather';
 ChartJS.register(

@@ -53,7 +53,8 @@ const RevenueBreakup = () => {
     isLoading: isLoadingBookingData,
     error,
   } = useBookingsNew(serialize({ page: 1, limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' }));
-
+console.log("bookings data", bookingData2)
+  
   const chartRef = useRef(null);
 
   const aggregatedData2 = useMemo(() => {
@@ -208,6 +209,8 @@ const RevenueBreakup = () => {
           <div className="w-32">
             {isLoadingBookingData ? (
               <Loader className="mx-auto" />
+            ) : aggregatedData2.directclient === 0 && aggregatedData2.government === 0 && aggregatedData2.localagency === 0 && aggregatedData2.nationalagency === 0 ? (
+              <p className="text-center">NA</p>
             ) : (
               <Doughnut
                 options={config.options}
@@ -217,6 +220,7 @@ const RevenueBreakup = () => {
               />
             )}
           </div>
+        
           <div>
             <p className="font-medium">Revenue Breakup</p>
             <div className="flex gap-8 mt-6">

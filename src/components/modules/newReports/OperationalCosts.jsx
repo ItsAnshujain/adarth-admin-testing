@@ -77,7 +77,7 @@ const OperationalCosts = () => {
   const { data: operationalCostTypes } = useFetchMasters(
     serialize({
       type: 'operational_cost_type',
-      limit: 100,
+      limit: 1000,
       page: 1,
       sortBy: 'name',
       sortOrder: 'asc',
