@@ -79,7 +79,7 @@ const barDataConfigByClient = {
   options: {
     responsive: true,
     maintainAspectRatio: false,
-    radius: '90%', 
+    radius: '90%',
     plugins: {
       legend: {
         display: true,
@@ -114,10 +114,7 @@ const SourceClientDistribution = () => {
   const chartRef = useRef(null);
 
   const { data: bookingData, isLoading: isLoadingBookingData } = useBookingsNew(
-    serialize({ page: 1,
-      limit: 1000,
-      sortBy: 'createdAt',
-      sortOrder: 'desc'})
+    serialize({ page: 1, limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' }),
   );
 
   // Calculate Own and Traded Site Revenues
@@ -297,7 +294,7 @@ const SourceClientDistribution = () => {
   };
   return (
     <div className={classNames('flex gap-8 pt-4', isReport ? 'flex-col' : '')}>
-      <div className='flex flex-col mt-2 p-4  min-h-[200px]' id="Source_Distribution" >
+      <div className="flex flex-col mt-2 p-4  min-h-[200px]" id="Source_Distribution">
         <div className="flex justify-between">
           <p className="font-bold">Source Distribution</p>
           {isReport ? null : (
@@ -331,10 +328,7 @@ const SourceClientDistribution = () => {
           )}
         </div>
       </div>
-      <div
-        className='flex flex-col p-4 min-h-[200px]'
-        id="Client_Distribution"
-      >
+      <div className="flex flex-col p-4 min-h-[200px]" id="Client_Distribution">
         <div className="flex justify-between">
           <p className="font-bold">Client Type Distribution</p>
           {isReport ? null : (
@@ -355,20 +349,20 @@ const SourceClientDistribution = () => {
           Agencies", "National Agencies", and "Government".
         </p>
         <div className="w-72 justify-center mx-6">
-        {isLoadingBookingData ? (
-  <Loader className="mx-auto" />
-) : updatedClient.datasets[0].data.every(value => value === 0) ? (
-  <p className="text-center">NA</p>
-) : (
-  <Pie
-    data={updatedClient}
-    options={barDataConfigByClient.options}
-    height={200}
-    width={200}
-    ref={chartRef}
-    plugins={[ChartDataLabels, customLinesPlugin]}
-  />
-)}
+          {isLoadingBookingData ? (
+            <Loader className="mx-auto" />
+          ) : updatedClient.datasets[0].data.every(value => value === 0) ? (
+            <p className="text-center">NA</p>
+          ) : (
+            <Pie
+              data={updatedClient}
+              options={barDataConfigByClient.options}
+              height={200}
+              width={200}
+              ref={chartRef}
+              plugins={[ChartDataLabels, customLinesPlugin]}
+            />
+          )}
         </div>
       </div>
     </div>

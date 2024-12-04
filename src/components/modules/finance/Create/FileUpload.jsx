@@ -149,7 +149,7 @@ const FileUpload = () => {
   const { mutate: update, isLoading: isUpdateBookingLoading } = useUpdateBooking();
   const { getRootProps, getInputProps, open } = useDropzone({
     accept: {
-      'application/file': ['.pdf'],
+      'application/pdf': ['.pdf'],
     },
     disabled: isLoading,
     multiple: false,
@@ -269,7 +269,7 @@ const FileUpload = () => {
               size={34}
               className={file ? 'text-green-500' : 'text-slate-400'}
             />
-            <input type="hidden" {...getInputProps()} accept=".xlsx, .xls, .csv" />
+            <input type="hidden" {...getInputProps()} accept="application/pdf" />
 
             {file ? (
               <p className="mt-2 mb-3">{file.name}</p>
