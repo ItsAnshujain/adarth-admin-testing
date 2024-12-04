@@ -3,7 +3,7 @@ import { Text, Image, Button } from '@mantine/core';
 import OngoingOrdersIcon from '../../../assets/ongoing-orders.svg';
 import InitiateDiscussionIcon from '../../../assets/message-share.svg';
 import TotalRevenueIcon from '../../../assets/total-revenue.svg';
-import { useBookingReportByRevenueStats, useBookings } from '../../../apis/queries/booking.queries';
+import { useBookingReportByRevenueStats, useBookings, usebookingsWithDetails } from '../../../apis/queries/booking.queries';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
@@ -21,7 +21,7 @@ const RevenueCards = () => {
     data: bookingData,
     isLoading: isLoadingBookingData,
     error,
-  } = useBookings(serialize({ page: 1, limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' }));
+  } = usebookingsWithDetails(serialize({ page: 1, limit: 400, sortBy: 'createdAt', sortOrder: 'desc' }));
 
   const { data: revenueData } = useBookingReportByRevenueStats();
 

@@ -22,7 +22,7 @@ import {
   LogarithmicScale,
   Chart,
 } from 'chart.js';
-import { useBookings } from '../../../apis/queries/booking.queries';
+import { useBookings, usebookingsWithDetails } from '../../../apis/queries/booking.queries';
 import { monthsInShort, serialize } from '../../../utils';
 import html2pdf from 'html2pdf.js';
 import { Download } from 'react-feather';
@@ -66,9 +66,9 @@ const RevenueDistribution = () => {
 
   const chartRef = useRef(null); 
 
-  const { data: bookingData, isLoading: isLoadingBookingData } = useBookings(
+  const { data: bookingData, isLoading: isLoadingBookingData } = usebookingsWithDetails(
     serialize({ page: 1,
-      limit: 1000,
+      limit: 400,
       sortBy: 'createdAt',
       sortOrder: 'desc'})
   );
@@ -130,6 +130,7 @@ const RevenueDistribution = () => {
 
     const groupedData = bookingData.docs.reduce((acc, booking) => {
       const date = new Date(booking.createdAt);
+      const day = date.getDate();
       const year = date.getFullYear();
       const month = date.getMonth(); // Month is 0-indexed
       const revenue = parseFloat(booking.totalAmount) || 0;

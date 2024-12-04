@@ -26,6 +26,7 @@ import {
   exportBookings,
   exportBooking,
   bookingsNew,
+  bookingsWithDetails,
 } from '../requests/booking.requests';
 import { onApiError } from '../../utils';
 
@@ -45,6 +46,17 @@ export const useBookingsNew = (filter, enabled = true) =>
     ['bookingsNew', filter],
     async () => {
       const res = await bookingsNew(filter);
+      return res?.data;
+    },
+    {
+      enabled: !!enabled,
+    },
+  );
+export const usebookingsWithDetails = (filter, enabled = true) =>
+  useQuery(
+    ['bookingsWithDetails', filter],
+    async () => {
+      const res = await bookingsWithDetails(filter);
       return res?.data;
     },
     {

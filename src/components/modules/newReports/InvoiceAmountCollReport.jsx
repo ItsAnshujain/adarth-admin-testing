@@ -18,7 +18,7 @@ import {
   Title,
   LogarithmicScale,
 } from 'chart.js';
-import { useBookings } from '../../../apis/queries/booking.queries';
+import { useBookings, usebookingsWithDetails } from '../../../apis/queries/booking.queries';
 import GaugeChart from './GaugeChart';
 import InvoiceReportChart from './InvoiceReportChart';
 import { generateSlNo, serialize } from '../../../utils';
@@ -58,10 +58,10 @@ const list1 = [
 const InvoiceAmountCollReport = () => {
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
-  const { data: bookingData, isLoading: isLoadingBookingData } = useBookings(
+  const { data: bookingData, isLoading: isLoadingBookingData } = usebookingsWithDetails(
     serialize({
       page: 1,
-      limit: 1000,
+      limit: 400,
       sortBy: 'createdAt',
       sortOrder: 'desc',
     }),

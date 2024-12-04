@@ -23,6 +23,7 @@ import {
 import {
   useBookingReportByRevenueGraph,
   useBookings,
+  usebookingsWithDetails,
 } from '../../../apis/queries/booking.queries';
 import {
   financialEndDate,
@@ -163,8 +164,8 @@ const RevenueAndIndustriGraph = () => {
 
   const chartRef = useRef(null); 
 
-  const { data: bookingData, isLoading: isLoadingBookingData } = useBookings(
-    serialize({ page: 1, limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' }),
+  const { data: bookingData, isLoading: isLoadingBookingData } = usebookingsWithDetails(
+    serialize({ page: 1, limit: 400, sortBy: 'createdAt', sortOrder: 'desc' }),
   );
 
   const [startDate, setStartDate] = useState(financialStartDate);

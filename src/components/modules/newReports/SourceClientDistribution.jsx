@@ -355,20 +355,20 @@ const SourceClientDistribution = () => {
           Agencies", "National Agencies", and "Government".
         </p>
         <div className="w-72 justify-center mx-6">
-          {isLoadingBookingData ? (
-            <Loader className="mx-auto" />
-          ) : updatedClient && updatedClient.datasets[0].data.length > 0 ? (
-            <Pie
-              data={updatedClient}
-              options={barDataConfigByClient.options}
-              height={200}
-              width={200}
-              ref={chartRef}
-              plugins={[ChartDataLabels, customLinesPlugin]}
-            />
-          ) : (
-            <p className="text-center">NA</p>
-          )}
+        {isLoadingBookingData ? (
+  <Loader className="mx-auto" />
+) : updatedClient.datasets[0].data.every(value => value === 0) ? (
+  <p className="text-center">NA</p>
+) : (
+  <Pie
+    data={updatedClient}
+    options={barDataConfigByClient.options}
+    height={200}
+    width={200}
+    ref={chartRef}
+    plugins={[ChartDataLabels, customLinesPlugin]}
+  />
+)}
         </div>
       </div>
     </div>

@@ -14,7 +14,7 @@ import html2pdf from 'html2pdf.js';
 const CampaignDetails = () => {
 
   const { data: bookingData, isLoading: isLoadingBookingData } = useBookings(
-    serialize({ page: 1, limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' }),
+    serialize({ page: 1, limit: 400, sortBy: 'createdAt', sortOrder: 'desc' }),
   );
 
   const { data: campaignStatus } = useFetchMasters(
