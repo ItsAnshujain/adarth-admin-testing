@@ -1,5 +1,8 @@
 import { useMemo, useState } from 'react';
-import { useFetchInventory } from '../../../apis/queries/inventory.queries';
+import {
+  useFetchInventory,
+  useFetchTradedMarginInventory,
+} from '../../../apis/queries/inventory.queries';
 import { generateSlNo, serialize } from '../../../utils';
 import Table1 from '../../Table/Table1';
 import html2pdf from 'html2pdf.js';
@@ -8,64 +11,23 @@ import { Download } from 'react-feather';
 import classNames from 'classnames';
 
 const PriceTradedMargin = () => {
-  const { data: inventoryData, isLoading: isLoadingInventoryData } = useFetchInventory(
-    serialize({
-      page: 1,
-      limit: 500,
-      sortBy: 'basicInformation.spaceName',
-      sortOrder: 'desc',
-      isActive: true,
-    }),
-  );
-  console.log("inventory data", inventoryData)
-
+  const { data: tradedMarginData, isLoading: isLoadingTradedMarginData } =
+    useFetchTradedMarginInventory(
+      serialize({
+        sortBy: 'city',
+        sortOrder: 'desc',
+        isActive: true,
+      }),
+    );
   const processedData = useMemo(() => {
-    if (!inventoryData?.docs?.length) return [];
+    if (!tradedMarginData?.cityData) return [];
 
-    const cityData = {};
-
-    inventoryData.docs.forEach(inventory => {
-      const city = inventory.location?.city;
-      if (!city) return;
-
-      let totalCityPrice = 0;
-      let totalCityTradedAmount = 0;
-
-      inventory.campaigns?.forEach(campaign => {
-        campaign.place?.forEach(place => {
-          totalCityPrice += place.price || 0;
-          totalCityTradedAmount += place.tradedAmount || 0;
-        });
-      });
-
-      const tradedMargin = totalCityPrice - totalCityTradedAmount;
-      const percentageMargin = totalCityPrice
-        ? ((tradedMargin / totalCityPrice) * 100).toFixed(2)
-        : 0;
-
-      if (!cityData[city]) {
-        cityData[city] = {
-          city,
-          totalPrice: totalCityPrice,
-          totalTradedAmount: totalCityTradedAmount,
-          tradedMargin,
-          percentageMargin,
-        };
-      } else {
-        cityData[city].totalPrice += totalCityPrice;
-        cityData[city].totalTradedAmount += totalCityTradedAmount;
-        cityData[city].tradedMargin += tradedMargin;
-        cityData[city].percentageMargin = (
-          (cityData[city].tradedMargin / cityData[city].totalPrice) *
-          100
-        ).toFixed(2);
-      }
-    });
-
-    const sortedData = Object.values(cityData).sort((a, b) => b.tradedMargin - a.tradedMargin);
-
-    return sortedData;
-  }, [inventoryData]);
+    // Convert cityData object to an array
+    return Object.entries(tradedMarginData.cityData).map(([key, value]) => ({
+      ...value,
+      id: key, // Use the city name or a unique key as the ID
+    }));
+  }, [tradedMarginData]);
 
   const columns3 = useMemo(
     () => [
@@ -73,7 +35,7 @@ const PriceTradedMargin = () => {
         Header: '#',
         accessor: 'id',
         disableSortBy: true,
-        Cell: info => useMemo(() => <p>{generateSlNo(info.row.index, 1, 1000)}</p>, []),
+        Cell: info => <p>{info.row.index + 1}</p>,
       },
       {
         Header: 'City',
@@ -113,10 +75,7 @@ const PriceTradedMargin = () => {
     [],
   );
 
-  // traded margin report
-
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
-  //For Pdf Download
 
   const [isDownloadPdfLoading, setIsDownloadPdfLoading] = useState(false);
 
@@ -139,6 +98,7 @@ const PriceTradedMargin = () => {
         window.history.pushState({}, '', url);
       });
   };
+
   return (
     <div
       className="col-span-12 md:col-span-12 lg:col-span-10 overflow-y-auto p-5"
@@ -147,7 +107,7 @@ const PriceTradedMargin = () => {
       <div className="flex justify-between">
         <p className="font-bold">Price and Traded Margin Report</p>
         {isReport ? null : (
-          <div className=" ">
+          <div className="">
             <Button
               className="primary-button mx-3 pdf_download_button"
               onClick={handleDownloadPdf}
@@ -160,14 +120,14 @@ const PriceTradedMargin = () => {
         )}
       </div>
       <p className="text-sm text-gray-600 italic py-4">
-        This report provide insights into the pricing trends, traded prices, and margins grouped by
+        This report provides insights into the pricing trends, traded prices, and margins grouped by
         cities. (Amounts in Lacs)
       </p>
-      <div className={classNames("overflow-y-auto", isReport?'w-[40rem]':'')}>
+      <div className={classNames('overflow-y-auto', isReport ? 'w-[40rem]' : '')}>
         <Table1
           data={processedData || []}
           COLUMNS={columns3}
-          loading={isLoadingInventoryData}
+          loading={isLoadingTradedMarginData}
           showPagination={false}
         />
       </div>

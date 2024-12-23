@@ -36,7 +36,7 @@ const ProposalSpacesMenuPopover = ({
   return (
     <Menu shadow="md" width={150}>
       <Menu.Target>
-        <Button className="py-0" onClick={e => e.stopPropagation()}>
+        <Button className="py-0 bg-white" onClick={e => e.stopPropagation()}>
           <MenuIcon />
         </Button>
       </Menu.Target>

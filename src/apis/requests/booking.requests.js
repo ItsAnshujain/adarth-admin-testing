@@ -5,6 +5,20 @@ export const bookings = filter => http.get(`/booking/basic?${filter}`);
 
 export const bookingsWithDetails = filter => http.get(`/booking/basic/withDetails?${filter}`);
 
+export const bookingsWithDetailsNew = ()=> http.get(`/booking/basic/withDetailsNew`);
+
+export const bookingsRevenueBreakup = ()=> http.get(`/booking/revenue-breakup/v2`);
+
+export const bookingsSalesDistribution = ()=> http.get(`/booking/distribution/report`);
+
+export const bookingsClientDetails = ()=> http.get(`/booking/client-details/report`);
+
+export const bookingsDistributionCollected = ()=> http.get(`/booking/distribution-collected/report`);
+
+export const bookingsSalesOverview = ()=> http.get(`/booking/sale-overview/report`);
+
+export const bookingsCategoryAdditional = ()=> http.get(`/booking/category-additional/report`);
+
 export const bookingsNew = filter => http.get(`/booking?${filter}`);
 
 export const fetchbookingById = id => http.get(`/booking/${id}`);

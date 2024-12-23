@@ -27,7 +27,7 @@ const CampaignsMenuPopover = ({ isFeatured, itemId, onClickSetAsFeature }) => {
   return (
     <Menu shadow="md" width={180}>
       <Menu.Target>
-        <Button>
+        <Button className='bg-white'>
           <MenuIcon />
         </Button>
       </Menu.Target>

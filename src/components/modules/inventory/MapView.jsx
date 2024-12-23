@@ -8,6 +8,7 @@ import { GOOGLE_MAPS_API_KEY } from '../../../utils/config';
 import { useFetchMasters } from '../../../apis/queries/masters.queries';
 import { indianMapCoordinates, serialize } from '../../../utils';
 
+
 const styles = {
   rightSection: { pointerEvents: 'none' },
 };
@@ -19,6 +20,14 @@ const defaultProps = {
   },
   zoom: 5,
 };
+
+const isValidLatLng = (latitude, longitude) =>
+  typeof latitude === 'number' &&
+  typeof longitude === 'number' &&
+  latitude >= -90 &&
+  latitude <= 90 &&
+  longitude >= -180 &&
+  longitude <= 180;
 
 const Marker = ({ title }) => <Image src={MarkerIcon} width={40} height={40} title={title} />;
 
@@ -39,6 +48,7 @@ const MapView = ({ lists = [] }) => {
       sortOrder: 'asc',
     }),
   );
+
   const [mapInstance, setMapInstance] = useState(null);
   const category = searchParams.get('category');
 
@@ -52,12 +62,20 @@ const MapView = ({ lists = [] }) => {
     setSearchParams(searchParams);
   };
 
-  const getAllLocations = useMemo(
-    () =>
-      lists.map(item => (
+  const centerCoordinates = useMemo(() => {
+    const firstItem = lists?.[0];
+    return isValidLatLng(firstItem?.location?.latitude, firstItem?.location?.longitude)
+      ? { lat: firstItem.location.latitude, lng: firstItem.location.longitude }
+      : defaultProps.center;
+  }, [lists]);
+
+  const getAllLocations = useMemo(() =>
+    lists
+      .filter(item => isValidLatLng(item?.location?.latitude, item?.location?.longitude))
+      .map(item => (
         <Marker
-          lat={item?.location?.latitude}
-          lng={item?.location?.longitude}
+          lat={item.location.latitude}
+          lng={item.location.longitude}
           key={item._id}
           title={item?.basicInformation?.spaceName}
         />
@@ -80,17 +98,27 @@ const MapView = ({ lists = [] }) => {
     if (mapInstance && lists?.length) {
       const bounds = new mapInstance.maps.LatLngBounds();
 
-      // default coordinates
+      // Include the default coordinates
       bounds.extend({
         lat: indianMapCoordinates.latitude,
         lng: indianMapCoordinates.longitude,
       });
 
+      // Add valid list locations to bounds
+      lists
+        .filter(item => isValidLatLng(item?.location?.latitude, item?.location?.longitude))
+        .forEach(item => {
+          bounds.extend({
+            lat: item.location.latitude,
+            lng: item.location.longitude,
+          });
+        });
+
       mapInstance.map.fitBounds(bounds);
       mapInstance.map.setCenter(bounds.getCenter());
       mapInstance.map.setZoom(Math.min(5, mapInstance.map.getZoom()));
     }
-  }, [lists?.length, mapInstance]);
+  }, [lists, mapInstance]);
 
   return (
     <div className="relative px-5">

@@ -62,7 +62,7 @@ const Header = ({ setFormStep, formStep, isLoading, isEditable }) => {
         ))}
       </div>
       <div className="flex gap-4">
-        <Button className="border-black radius-md text-black" onClick={handleBooking}>
+        <Button className="border-black radius-md text-black bg-white" onClick={handleBooking}>
           Cancel
         </Button>
         <Button

@@ -3,7 +3,7 @@ import { Text, Image, Button } from '@mantine/core';
 import OngoingOrdersIcon from '../../../assets/ongoing-orders.svg';
 import InitiateDiscussionIcon from '../../../assets/message-share.svg';
 import TotalRevenueIcon from '../../../assets/total-revenue.svg';
-import { useBookingReportByRevenueStats, useBookings, usebookingsWithDetails } from '../../../apis/queries/booking.queries';
+import { useBookingReportByRevenueStats, useBookings, usebookingsSalesDistribution, usebookingsWithDetails, usebookingsWithDetailsNew } from '../../../apis/queries/booking.queries';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
@@ -21,7 +21,7 @@ const RevenueCards = () => {
     data: bookingData,
     isLoading: isLoadingBookingData,
     error,
-  } = usebookingsWithDetails(serialize({ page: 1, limit: 400, sortBy: 'createdAt', sortOrder: 'desc' }));
+  } = usebookingsSalesDistribution();
 
   const { data: revenueData } = useBookingReportByRevenueStats();
 
@@ -66,10 +66,10 @@ const RevenueCards = () => {
   };
 
   const monthToDateData = bookingData
-    ? getMonthToDateRevenue(bookingData.docs)
+    ? getMonthToDateRevenue(bookingData)
     : { totalRevenue: 0, dateRange: '' };
   const yearToDateData = bookingData
-    ? getYearToDateRevenue(bookingData.docs)
+    ? getYearToDateRevenue(bookingData)
     : { totalRevenue: 0, dateRange: '' };
 
   const cardData = [
@@ -118,7 +118,7 @@ const RevenueCards = () => {
   };
 
   const { data: proposalsData, isLoading: isLoadingProposalsData } = useFetchProposals(
-    serialize({ page: 1, limit: 500, sortBy: 'createdAt', sortOrder: 'desc' }),
+    serialize({ page: 1, limit: 450, sortBy: 'createdAt', sortOrder: 'desc' }),
   );
 
   const proposalsArray = Array.isArray(proposalsData?.docs) ? proposalsData.docs : [];

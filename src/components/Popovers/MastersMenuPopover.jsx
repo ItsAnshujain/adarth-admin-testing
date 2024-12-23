@@ -26,7 +26,7 @@ const MastersMenuPopover = ({ itemId, name }) => {
     <>
       <Menu shadow="md" width={150}>
         <Menu.Target>
-          <Button>
+          <Button className='bg-white'>
             <MenuIcon />
           </Button>
         </Menu.Target>

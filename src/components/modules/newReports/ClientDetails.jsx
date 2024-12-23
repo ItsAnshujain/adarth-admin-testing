@@ -15,7 +15,7 @@ import {
   Title,
   LogarithmicScale,
 } from 'chart.js';
-import { useBookingsNew } from '../../../apis/queries/booking.queries';
+import { useBookingsClientDetails, useBookingsNew, usebookingsWithDetailsNew } from '../../../apis/queries/booking.queries';
 import Table1 from '../../Table/Table1';
 import { Download } from 'react-feather';
 import html2pdf from 'html2pdf.js';
@@ -46,9 +46,7 @@ const list2 = [
 const ClientDetails = () => {
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
-  const { data: bookingData2, isLoading: isLoadingBookingData } = useBookingsNew(
-    serialize({ page: 1, limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' }),
-  );
+  const { data: bookingData2, isLoading: isLoadingBookingData } = useBookingsClientDetails( );
 
   // client details
   const getFinancialYear1 = date => {
@@ -72,39 +70,35 @@ const ClientDetails = () => {
 
   const tableData4 = useMemo(() => {
     if (!bookingData2) return [];
-
+  
     return bookingData2
       .map(booking => {
-        const { totalAmount, details, campaign } = booking;
-        const firstDetail = details[0] || {};
-        const client = firstDetail.client || {};
-
-        if (!client.clientType) return null;
-
+        const { totalAmount, client, operationalCosts } = booking;
+        if (!client?.clientType) return null;
         const firstBookingDate = new Date(booking.createdAt);
         const revenue = (totalAmount / 100000).toFixed(2) || 0;
-
-        const totalOperationalCost = (campaign?.spaces?.operationalCosts || []).reduce(
-          (sum, cost) => sum + cost.amount,
-          0,
-        );
-
+  
+        // Ensure campaign.spaces.operationalCosts is an array
+        const totalOperationalCost = Array.isArray(operationalCosts)
+          ? operationalCosts.reduce((sum, cost) => sum + cost.amount, 0)
+          : 0;
+  
         const profitability =
           revenue > 0
             ? (((revenue * 100000 - totalOperationalCost) / (revenue * 100000)) * 100).toFixed(2) +
               '%'
             : '0%';
-
+  
         const retentionStatus = getFinancialYear1(firstBookingDate);
         if (filter2 && retentionStatus !== filter2) {
           return null;
         }
-
+  
         const timeline = firstBookingDate.toLocaleString('en-US', {
           month: 'short',
           year: 'numeric',
         });
-
+  
         return {
           clientCategory: client.clientType,
           name: client.name || 'N/A',
@@ -114,8 +108,9 @@ const ClientDetails = () => {
           profitability,
         };
       })
-      .filter(Boolean);
+      .filter(Boolean); // Remove null entries
   }, [bookingData2, filter2]);
+  
 
   const tableColumns4 = useMemo(() => {
     return [

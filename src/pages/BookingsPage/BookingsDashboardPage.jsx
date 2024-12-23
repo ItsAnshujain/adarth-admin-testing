@@ -486,7 +486,7 @@ const BookingsDashboardPage = () => {
               <Button
                 className={classNames(
                   campaign?.medias?.length
-                    ? 'text-purple-450 cursor-pointer'
+                    ? 'text-purple-450 cursor-pointer bg-white'
                     : 'pointer-events-none text-gray-450 bg-white',
                   'font-medium  text-base',
                 )}
@@ -518,7 +518,7 @@ const BookingsDashboardPage = () => {
                 href={purchaseOrder}
                 className={classNames(
                   purchaseOrder
-                    ? 'text-purple-450 cursor-pointer'
+                    ? 'text-purple-450 cursor-pointer bg-white'
                     : 'pointer-events-none text-gray-450',
                   'font-medium',
                 )}
@@ -547,8 +547,8 @@ const BookingsDashboardPage = () => {
                 href={releaseOrder}
                 className={classNames(
                   releaseOrder
-                    ? 'text-purple-450 cursor-pointer'
-                    : 'pointer-events-none text-gray-450',
+                    ? 'text-purple-450 cursor-pointer bg-white'
+                    : 'pointer-events-none text-gray-450 bg-white',
                   'font-medium',
                 )}
                 target="_blank"
@@ -575,7 +575,7 @@ const BookingsDashboardPage = () => {
               <a
                 href={invoice}
                 className={classNames(
-                  invoice ? 'text-purple-450 cursor-pointer' : 'pointer-events-none text-gray-450',
+                  invoice ? 'text-purple-450 cursor-pointer bg-white' : 'pointer-events-none text-gray-450 bg-white',
                   'font-medium',
                 )}
                 target="_blank"

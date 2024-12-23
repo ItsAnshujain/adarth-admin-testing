@@ -31,7 +31,7 @@ const LeadMenuPopover = ({ itemId, toggleAddFollowUp, toggleViewLead, onClose = 
   return (
     <Menu shadow="md" width={140}>
       <Menu.Target>
-        <Button
+        <Button  className='bg-white'
           onClick={e => {
             e.stopPropagation();
           }}

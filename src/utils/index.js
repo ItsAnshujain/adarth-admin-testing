@@ -190,6 +190,14 @@ export const downloadPdf = pdfLink => {
   link.click();
   document.body.removeChild(link);
 };
+export const downloadFile = (fileUrl, fileFormat) => {
+  const link = document.createElement('a');
+  link.href = fileUrl;
+  link.download = `download.${fileFormat.toLowerCase()}`;  // Dynamic file extension
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
 /**
  * Download multiple files at once

@@ -47,7 +47,7 @@ const BookingsMenuPopover = ({
   return (
     <Menu shadow="md" width={120}>
       <Menu.Target>
-        <Button>
+        <Button className='bg-white'>
           <MenuIcon />
         </Button>
       </Menu.Target>

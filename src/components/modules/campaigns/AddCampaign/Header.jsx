@@ -60,7 +60,7 @@ const Header = ({ setFormStep, formStep, handleFormSubmit, disabled, loading }) 
         ))}
       </div>
       <div className="flex gap-4">
-        <Button onClick={handleCampaigns} className="border-black radius-md text-black">
+        <Button onClick={handleCampaigns} className="border-black radius-md text-black bg-white">
           Cancel
         </Button>
         <Button onClick={handleBack} className="bg-black">

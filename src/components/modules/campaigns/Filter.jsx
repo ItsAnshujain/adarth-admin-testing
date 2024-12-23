@@ -149,7 +149,7 @@ const CampaignFilter = ({ isOpened, onClose = () => {} }) => {
       onClose={onClose}
     >
       <div className="w-full flex justify-end">
-        <Button onClick={handleReset} className="border-black text-black radius-md mr-3">
+        <Button onClick={handleReset} className="border-black text-black radius-md mr-3 bg-white">
           Reset
         </Button>
         <Button variant="default" className="mb-3 bg-purple-450 text-white" onClick={handleApply}>

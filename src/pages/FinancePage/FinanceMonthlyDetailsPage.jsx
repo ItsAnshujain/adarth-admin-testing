@@ -50,6 +50,21 @@ const FinanceMonthlyDetailsPage = () => {
   const ref = useClickOutside(() => setShowDatePicker(false));
   const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
 
+  const [showDatePickerPurchase, setShowDatePickerPurchase] = useState(false);
+  const [showDatePickerRelease, setShowDatePickerRelease] = useState(false);
+  const [showDatePickerInvoice, setShowDatePickerInvoice] = useState(false);
+
+  // Refs for detecting clicks outside each date picker
+  const refPurchase = useClickOutside(() => setShowDatePickerPurchase(false));
+  const refRelease = useClickOutside(() => setShowDatePickerRelease(false));
+  const refInvoice = useClickOutside(() => setShowDatePickerInvoice(false));
+
+  // Toggle functions for each tab
+  const toggleDatePickerPurchase = () => setShowDatePickerPurchase(!showDatePickerPurchase);
+  const toggleDatePickerRelease = () => setShowDatePickerRelease(!showDatePickerRelease);
+  const toggleDatePickerInvoice = () => setShowDatePickerInvoice(!showDatePickerInvoice);
+
+
   const page = searchParams.get('page');
   const limit = searchParams.get('limit');
   const financeRecordId = searchParams.get('id');
@@ -732,13 +747,13 @@ const FinanceMonthlyDetailsPage = () => {
         <Tabs.Panel value="purchase">
           <div className="py-4 flex justify-end gap-2 text-right">
             <Search search={searchInput} setSearch={setSearchInput} />
-            <div ref={ref} className=" relative">
-              <Button onClick={toggleDatePicker} variant="default">
+            <div ref={refPurchase} className="relative">
+              <Button onClick={toggleDatePickerPurchase} variant="default">
                 <img src={calendar} className="h-5" alt="calendar" />
               </Button>
-              {showDatePicker && (
+              {showDatePickerPurchase && (
                 <div className="absolute z-20 -translate-x-2/3 bg-white -top-0.3 right-[-400px]">
-                  <DateRange handleClose={toggleDatePicker} dateKeys={['startDate', 'endDate']} />
+                  <DateRange handleClose={toggleDatePickerPurchase} dateKeys={['startDate', 'endDate']} />
                 </div>
               )}
             </div>
@@ -758,13 +773,13 @@ const FinanceMonthlyDetailsPage = () => {
         <Tabs.Panel value="release">
           <div className="py-4 flex justify-end gap-2 text-right">
             <Search search={searchInput} setSearch={setSearchInput} />
-            <div ref={ref} className=" relative">
-              <Button onClick={toggleDatePicker} variant="default">
+            <div ref={refRelease} className="relative">
+              <Button onClick={toggleDatePickerRelease} variant="default">
                 <img src={calendar} className="h-5" alt="calendar" />
               </Button>
-              {showDatePicker && (
+              {showDatePickerRelease && (
                 <div className="absolute z-20 -translate-x-2/3 bg-white -top-0.3 right-[-400px]">
-                  <DateRange handleClose={toggleDatePicker} dateKeys={['startDate', 'endDate']} />
+                  <DateRange handleClose={toggleDatePickerRelease} dateKeys={['startDate', 'endDate']} />
                 </div>
               )}
             </div>
@@ -784,13 +799,13 @@ const FinanceMonthlyDetailsPage = () => {
         <Tabs.Panel value="invoice">
           <div className="py-4 flex justify-end gap-2 text-right">
             <Search search={searchInput} setSearch={setSearchInput} />
-            <div ref={ref} className=" relative">
-              <Button onClick={toggleDatePicker} variant="default">
+            <div ref={refInvoice} className="relative">
+              <Button onClick={toggleDatePickerInvoice} variant="default">
                 <img src={calendar} className="h-5" alt="calendar" />
               </Button>
-              {showDatePicker && (
+              {showDatePickerInvoice && (
                 <div className="absolute z-20 -translate-x-2/3 bg-white -top-0.3 right-[-400px]">
-                  <DateRange handleClose={toggleDatePicker} dateKeys={['startDate', 'endDate']} />
+                  <DateRange handleClose={toggleDatePickerInvoice} dateKeys={['startDate', 'endDate']} />
                 </div>
               )}
             </div>

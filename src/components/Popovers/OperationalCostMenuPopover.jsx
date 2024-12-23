@@ -27,7 +27,7 @@ const OperationalCostMenuPopover = ({ itemId, onEdit = () => {} }) => {
   return (
     <Menu shadow="md" withinPortal position="left">
       <Menu.Target>
-        <ActionIcon className="py-0" onClick={e => e.preventDefault()}>
+        <ActionIcon className="py-0  bg-white" onClick={e => e.preventDefault()}>
           <MenuIcon />
         </ActionIcon>
       </Menu.Target>

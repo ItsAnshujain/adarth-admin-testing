@@ -8,7 +8,7 @@ const RepositoryMenuPopover = () => (
     <Menu.Target>
       <Button
         rightIcon={<IconChevronDown />}
-        className="text-gray-400 border-gray-400 mr-4"
+        className="text-gray-400 border-gray-400 mr-4 bg-white"
         leftIcon={<IconDatabase />}
       >
         Repository

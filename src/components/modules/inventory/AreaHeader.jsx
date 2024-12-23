@@ -27,7 +27,7 @@ const AreaHeader = ({ text, inventoryData }) => {
     }),
     shallow,
   );
-
+console.log("inventory data", inventoryData)
   const ref = useClickOutside(() => setShowDatePicker(false));
   const toggleFilter = () => setShowFilter(!showFilter);
   const toggleAddDetails = () => setAddDetails(!addDetailsClicked);

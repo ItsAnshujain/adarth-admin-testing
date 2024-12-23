@@ -476,7 +476,7 @@ const BasicInformationForm = () => {
               ref={ref}
             >
               {props => (
-                <Button loaderProps={{ color: 'black' }} {...props}>
+                <Button loaderProps={{ color: 'black', backgroundColor:'white' }} {...props}>
                   Add More Photo
                 </Button>
               )}

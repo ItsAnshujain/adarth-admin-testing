@@ -11,6 +11,7 @@ import {
   fetchInventory,
   fetchInventoryById,
   fetchInventoryReportList,
+  fetchTradedMarginInventory,
   inventoryReport,
   inventoryStats,
   shareInventory,
@@ -51,6 +52,15 @@ export const useFetchInventory = (query, enabled = true) =>
     ['inventory', query],
     async () => {
       const res = await fetchInventory(query);
+      return res?.data;
+    },
+    { enabled },
+  );
+export const useFetchTradedMarginInventory = (query, enabled = true) =>
+  useQuery(
+    ['tradedmargininventory', query],
+    async () => {
+      const res = await fetchTradedMarginInventory(query);
       return res?.data;
     },
     { enabled },

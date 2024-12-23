@@ -81,9 +81,9 @@ const Header = ({ bookingId, bookingData }) => {
           onClick={() => handleTabs('order-information')}
           className={classNames(
             tab === 'order-information'
-              ? 'text-purple-450 after:content[""] after:block after:w-full after:h-0.5 after:relative after:top-3 after:bg-purple-450'
+              ? 'text-purple-450 after:content[""] after:block after:w-full after:h-0.5 after:relative after:top-3 '
               : 'text-black',
-            'px-0',
+            'px-0 bg-white',
           )}
         >
           Order Information
@@ -92,8 +92,9 @@ const Header = ({ bookingId, bookingData }) => {
           onClick={() => handleTabs('process-pipeline')}
           className={classNames(
             tab === 'process-pipeline'
-              ? 'text-purple-450 after:content[""] after:block after:w-full after:h-0.5 after:relative after:top-3 after:bg-purple-450'
+              ? 'text-purple-450 after:content[""] after:block after:w-full after:h-0.5 after:relative after:top-3 '
               : 'text-black',
+              'px-0 bg-white',
           )}
         >
           Process Pipeline
@@ -102,9 +103,9 @@ const Header = ({ bookingId, bookingData }) => {
           onClick={() => handleTabs('overview')}
           className={classNames(
             tab === 'overview'
-              ? 'text-purple-450 after:content[""] after:block after:w-full after:h-0.5 after:relative after:top-3 after:bg-purple-450'
+              ? 'text-purple-450 after:content[""] after:block after:w-full after:h-0.5 after:relative after:top-3 '
               : 'text-black',
-            'px-0',
+            'px-0 bg-white',
           )}
         >
           Overview

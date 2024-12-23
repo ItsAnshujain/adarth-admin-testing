@@ -5,6 +5,7 @@ import { Doughnut } from 'react-chartjs-2';
 import html2pdf from 'html2pdf.js';
 import { Download } from 'react-feather';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { useBookingsCategoryAdditional } from '../../../apis/queries/booking.queries';
 
 const customLinesPlugin = {
   id: 'customLines',

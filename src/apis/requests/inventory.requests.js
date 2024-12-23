@@ -5,6 +5,8 @@ export const createInventory = data => http.post('/inventory', data);
 
 export const fetchInventory = query => http.get(`/inventory?${query}`);
 
+export const fetchTradedMarginInventory = query => http.get(`/inventory/traded-margin?${query}`);
+
 export const fetchInventoryById = inventoryId => http.get(`/inventory/${inventoryId}`);
 
 export const updateInventory = (inventoryId, data) => http.patch(`/inventory/${inventoryId}`, data);

@@ -23,18 +23,23 @@ import {
 import {
   useBookingReportByRevenueGraph,
   useBookings,
+  useBookingsDistributionCollected,
   usebookingsWithDetails,
+  usebookingsWithDetailsNew,
 } from '../../../apis/queries/booking.queries';
 import {
+  daysInAWeek,
   financialEndDate,
   financialStartDate,
   monthsInShort,
+  quarters,
   serialize,
   timeLegend,
 } from '../../../utils';
 import ViewByFilter from '../reports/ViewByFilter';
 import html2pdf from 'html2pdf.js';
 import { Download } from 'react-feather';
+import { DATE_FORMAT } from '../../../utils/constants';
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -164,9 +169,7 @@ const RevenueAndIndustriGraph = () => {
 
   const chartRef = useRef(null); 
 
-  const { data: bookingData, isLoading: isLoadingBookingData } = usebookingsWithDetails(
-    serialize({ page: 1, limit: 400, sortBy: 'createdAt', sortOrder: 'desc' }),
-  );
+  const { data: bookingData, isLoading: isLoadingBookingData } = useBookingsDistributionCollected();
 
   const [startDate, setStartDate] = useState(financialStartDate);
   const [endDate, setEndDate] = useState(financialEndDate);
@@ -326,11 +329,11 @@ const RevenueAndIndustriGraph = () => {
   }, [revenueGraphData, groupBy]);
 
   const filterBookingDataByDate = useCallback(() => {
-    if (!bookingData || !Array.isArray(bookingData.docs)) {
-      return []; // Return an empty array if bookingData is undefined or not an array
+    if (!bookingData) {
+      return []; 
     }
 
-    return bookingData.docs.filter(booking => {
+    return bookingData.filter(booking => {
       const bookingDate = dayjs(booking.createdAt);
       return bookingDate.isBetween(dayjs(startDate), dayjs(endDate), 'day', '[]');
     });
@@ -371,7 +374,7 @@ const RevenueAndIndustriGraph = () => {
 
   useEffect(() => {
     if (!isLoadingBookingData && bookingData) {
-      handleUpdatedReveueByIndustry(); // Only process data once it's fully loaded
+      handleUpdatedReveueByIndustry(); 
     }
   }, [handleUpdatedReveueByIndustry, isLoadingBookingData, bookingData]);
 
@@ -463,7 +466,7 @@ const RevenueAndIndustriGraph = () => {
               </div>
             )}
           </div>
-          <div
+           <div
             className='w-[25rem] flex flex-col pl-5'
             id="Industry_distribution"
           >
@@ -503,7 +506,7 @@ const RevenueAndIndustriGraph = () => {
                 />
               )}
             </div>
-          </div>
+          </div> 
         </div>
     </div>
   );

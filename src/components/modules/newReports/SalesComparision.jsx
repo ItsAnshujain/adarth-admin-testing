@@ -20,7 +20,7 @@ import {
   LogarithmicScale,
   Chart,
 } from 'chart.js';
-import { useBookings, usebookingsWithDetails } from '../../../apis/queries/booking.queries';
+import { useBookings, usebookingsSalesDistribution, usebookingsWithDetails, usebookingsWithDetailsNew } from '../../../apis/queries/booking.queries';
 import { monthsInShort, serialize } from '../../../utils';
 import { Download } from 'react-feather';
 import html2pdf from 'html2pdf.js';
@@ -44,7 +44,7 @@ const SalesComparision = () => {
     data: bookingData,
     isLoading: isLoadingBookingData,
     error,
-  } = usebookingsWithDetails( serialize({ page: 1, limit: 400, sortBy: 'createdAt', sortOrder: 'desc' }),);
+  } = usebookingsSalesDistribution();
   const [salesData, setSalesData] = useState([]);
 
   const getCurrentYear = () => new Date().getFullYear();
@@ -66,8 +66,8 @@ const SalesComparision = () => {
   };
 
   useEffect(() => {
-    if (bookingData && bookingData.docs) {
-      const aggregatedData = aggregateSalesData(bookingData.docs);
+    if (bookingData ) {
+      const aggregatedData = aggregateSalesData(bookingData);
       setSalesData(aggregatedData);
     }
   }, [bookingData]);

@@ -43,7 +43,7 @@ const MenuPopover = ({ itemId, onClickDownloadPdf = () => {}, type }) => {
 
       <Menu shadow="md" width={150}>
         <Menu.Target>
-          <ActionIcon>
+          <ActionIcon  className='bg-white'>
             <MenuIcon />
           </ActionIcon>
         </Menu.Target>

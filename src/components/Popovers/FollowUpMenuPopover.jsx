@@ -49,7 +49,7 @@ const FollowUpMenuPopover = ({ itemId, toggleEditFollowUp }) => {
   return (
     <Menu shadow="md" width={140}>
       <Menu.Target>
-        <Button>
+        <Button  className='bg-white'>
           <MenuIcon />
         </Button>
       </Menu.Target>

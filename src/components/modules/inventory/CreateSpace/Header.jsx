@@ -57,7 +57,7 @@ const Header = ({ setFormStep, formStep, isLoading, isSaved }) => {
         ))}
       </div>
       <div className="flex gap-4 pr-5 flex-wrap">
-        <Button className="border-black radius-md text-black" onClick={handleInventory}>
+        <Button className="border-black radius-md text-black bg-white" onClick={handleInventory}>
           Cancel
         </Button>
         {!isSaved ? (

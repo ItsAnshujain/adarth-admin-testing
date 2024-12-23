@@ -113,18 +113,18 @@ const OtherNewReports = () => {
         <div className="border-2 p-5 border-black">
           <p className="font-bold text-lg"> Revenue </p>
           <RevenueBreakup />
-          <RevenueCards />
-          <SourceClientDistribution />
-          <RevenueDistribution />
+           <RevenueCards />
+         <SourceClientDistribution />
+          < RevenueDistribution />
           <RevenueAndIndustriGraph />
           <CategoryWiseReport />
-          <SalesOverview />
+          <SalesOverview /> 
         </div>
         <div className="border-2 p-5 border-black my-2">
           <p className="font-bold text-lg"> Trends </p>
           <TagwiseReport />
           <SalesDistribution />
-          <SalesComparision />
+          <SalesComparision /> 
         </div>
         <div className="border-2 p-5 border-black my-2">
           <OperationalCosts />
@@ -132,7 +132,7 @@ const OtherNewReports = () => {
         </div>
         <div className="border-2 p-5 border-black my-2">
           <p className="font-bold text-lg"> Client Data</p>
-          <CampaignCards />
+         <CampaignCards />
           <CampaignDetails />
           <ClientDetails />
           <PriceTradedMargin />

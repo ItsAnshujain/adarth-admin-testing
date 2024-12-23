@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import dayjs from 'dayjs';
 import { useSearchParams } from 'react-router-dom';
-import { Menu, Button } from '@mantine/core';
+import { Menu, Button, Loader } from '@mantine/core';
 import DateRangeSelector from '../../../components/DateRangeSelector';
 import classNames from 'classnames';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
@@ -22,7 +22,12 @@ import {
   LogarithmicScale,
   Chart,
 } from 'chart.js';
-import { useBookings, usebookingsWithDetails } from '../../../apis/queries/booking.queries';
+import {
+  useBookings,
+  usebookingsSalesDistribution,
+  usebookingsWithDetails,
+  usebookingsWithDetailsNew,
+} from '../../../apis/queries/booking.queries';
 import { monthsInShort, serialize } from '../../../utils';
 import html2pdf from 'html2pdf.js';
 import { Download } from 'react-feather';
@@ -64,14 +69,10 @@ const list = [
 const RevenueDistribution = () => {
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
-  const chartRef = useRef(null); 
+  const chartRef = useRef(null);
 
-  const { data: bookingData, isLoading: isLoadingBookingData } = usebookingsWithDetails(
-    serialize({ page: 1,
-      limit: 400,
-      sortBy: 'createdAt',
-      sortOrder: 'desc'})
-  );
+  const { data: bookingData, isLoading: isLoadingBookingData } = usebookingsSalesDistribution();
+ 
 
   const [filter, setFilter] = useState('currentYear');
   const [activeView, setActiveView] = useState('currentYear');
@@ -105,7 +106,7 @@ const RevenueDistribution = () => {
     return fiscalOrder.indexOf(a) - fiscalOrder.indexOf(b);
   };
   const transformedData = useMemo(() => {
-    if (!bookingData || !bookingData.docs) return {};
+    if (!bookingData ) return {};
 
     const currentYear = new Date().getFullYear();
     const fiscalStartMonth = 3; // Fiscal year starts in April
@@ -128,7 +129,7 @@ const RevenueDistribution = () => {
       customDate: {},
     };
 
-    const groupedData = bookingData.docs.reduce((acc, booking) => {
+    const groupedData = bookingData.reduce((acc, booking) => {
       const date = new Date(booking.createdAt);
       const day = date.getDate();
       const year = date.getFullYear();
@@ -191,8 +192,6 @@ const RevenueDistribution = () => {
       return acc;
     }, initialGroupedData);
 
-    // Ensure past10Years and past5Years are populated properly
-    // Ensure past10Years and past5Years are populated properly with defaults
     groupedData.past10Years = past10YearsRange.map(year => ({
       year,
       revenue: groupedData.past10Years?.[year] || 0, // Use optional chaining and provide default 0
@@ -387,7 +386,10 @@ const RevenueDistribution = () => {
       });
   };
   return (
-    <div className={classNames('p-6', isReport?'w-[38rem]':'w-[48rem]')} id="Revenue_distribution">
+    <div
+      className={classNames('p-6', isReport ? 'w-[38rem]' : 'w-[48rem]')}
+      id="Revenue_distribution"
+    >
       <div className="flex justify-between">
         <p className="font-bold ">Revenue Distribution</p>
         {isReport ? null : (
@@ -437,13 +439,18 @@ const RevenueDistribution = () => {
           <DateRangeSelector dateValue={[startDate2, endDate2]} onChange={onDateChange} />
         </div>
       )}
-
+      {isLoadingBookingData ? (
+        <div className="flex justify-center items-center h-64">
+          <Loader />
+        </div>
+      ) : (
         <Line
           data={chartData1}
           options={chartOptions1}
           ref={chartRef}
           plugins={[ChartDataLabels]}
         />
+      )}
     </div>
   );
 };

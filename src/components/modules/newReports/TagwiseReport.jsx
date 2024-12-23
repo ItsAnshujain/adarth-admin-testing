@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import dayjs from 'dayjs';
 import { useSearchParams } from 'react-router-dom';
-import { Menu, Button, MultiSelect, Text } from '@mantine/core';
+import { Menu, Button, MultiSelect, Text, Loader } from '@mantine/core';
 import DateRangeSelector from '../../../components/DateRangeSelector';
 import { useDistinctAdditionalTags } from '../../../apis/queries/inventory.queries';
 import classNames from 'classnames';
@@ -21,12 +21,11 @@ import {
   Title,
   LogarithmicScale,
 } from 'chart.js';
-import { useBookingsNew } from '../../../apis/queries/booking.queries';
+import { useBookingsCategoryAdditional } from '../../../apis/queries/booking.queries';
 import Table from '../../Table/Table';
 import Table1 from '../../Table/Table1';
 import { Download } from 'react-feather';
 import html2pdf from 'html2pdf.js';
-import { serialize } from '../../../utils';
 
 ChartJS.register(
   ArcElement,
@@ -74,9 +73,7 @@ const list3 = [
 const TagwiseReport = () => {
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
-  const { data: bookingData2, isLoading: isLoadingBookingData } = useBookingsNew(
-    serialize({ page: 1, limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' }),
-  );
+  const { data: bookingData2, isLoading: isLoadingBookingData } = useBookingsCategoryAdditional();
   const chartRef = useRef(null); // Reference to the chart instance
 
   const additionalTagsQuery = useDistinctAdditionalTags();
@@ -112,46 +109,37 @@ const TagwiseReport = () => {
 
   const transformedRevenueData = useMemo(() => {
     if (!bookingData2 || !selectedTags.length) return {};
-
+  
     const past7DaysRange = generatePast7Days();
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth();
-    const fiscalStartMonth = 3;
-
+    const fiscalStartMonth = 3; // Fiscal year starts in April
+  
     const groupedData = bookingData2.reduce((acc, booking) => {
-      const detailsWithTags = booking.details.filter(detail => {
-        const campaign = detail.campaign;
-        if (!campaign || !campaign.spaces || !Array.isArray(campaign.spaces)) return false;
-
-        return campaign.spaces.some(space => {
-          const spaceTags = space.specifications?.additionalTags || [];
-          return Array.isArray(spaceTags) && selectedTags.some(tag => spaceTags.includes(tag));
-        });
-      });
-
-      if (detailsWithTags.length === 0) return acc;
-
-      detailsWithTags.forEach(detail => {
-        const date = new Date(detail.createdAt);
-        const year = date.getFullYear();
-        const month = date.getMonth();
-        const day = date.getDate();
-        const formattedDate = `${month + 1}/${day}`; // Ensure it matches the format used in the table
-
-        const revenue = booking.totalAmount;
-
-        selectedTags.forEach(tag => {
-          const tagMatches = detail.campaign.spaces.some(space =>
-            space.specifications?.additionalTags?.includes(tag),
-          );
+      if (!Array.isArray(booking.campaign)) return acc;
+  
+      booking.campaign.forEach(campaign => {
+        if (!Array.isArray(campaign.spaces)) return;
+  
+        campaign.spaces.flat().forEach(space => {
+          const spaceTags = space?.specifications?.additionalTags || [];
+          const tagMatches = selectedTags.some(tag => spaceTags.includes(tag));
           if (!tagMatches) return;
-
+  
+          const date = new Date(booking.createdAt);
+          const year = date.getFullYear();
+          const month = date.getMonth();
+          const day = date.getDate();
+          const formattedDate = `${month + 1}/${day}`; // Format date as "MM/DD"
+          const revenue = booking.clientDetail?.totalAmount || 0;
+  
           let timeUnit;
-
+  
+          // Calculate fiscal year, month, and quarter
           const fiscalYear = month >= fiscalStartMonth ? year : year - 1;
           const fiscalMonth = (month + 12 - fiscalStartMonth) % 12;
           const fiscalQuarter = Math.ceil((fiscalMonth + 1) / 3);
-
+  
           // Determine timeUnit based on filter3
           if (filter3 === 'past10Years' && fiscalYear >= currentYear - 10) {
             timeUnit = fiscalYear;
@@ -164,7 +152,6 @@ const TagwiseReport = () => {
           } else if (filter3 === 'currentMonth' && year === currentYear && month === currentMonth) {
             timeUnit = day;
           } else if (filter3 === 'past7' && past7DaysRange.includes(formattedDate)) {
-            // Adjusted here
             timeUnit = formattedDate;
           } else if (
             filter3 === 'customDate' &&
@@ -173,7 +160,7 @@ const TagwiseReport = () => {
             date.getTime() >= new Date(startDate1).setHours(0, 0, 0, 0) &&
             date.getTime() <= new Date(endDate1).setHours(23, 59, 59, 999)
           ) {
-            timeUnit = formattedDate; // Consistent with expected row date format
+            timeUnit = formattedDate;
           } else if (filter3 === 'quarter' && fiscalYear === currentYear) {
             const quarterNames = [
               'First Quarter',
@@ -183,22 +170,23 @@ const TagwiseReport = () => {
             ];
             timeUnit = quarterNames[fiscalQuarter - 1];
           }
-
+  
           if (!timeUnit) return;
-
+  
           if (!acc[timeUnit]) acc[timeUnit] = {};
-          if (!acc[timeUnit][tag]) acc[timeUnit][tag] = 0;
-
-          acc[timeUnit][tag] += revenue;
+          selectedTags.forEach(tag => {
+            if (!acc[timeUnit][tag]) acc[timeUnit][tag] = 0;
+            acc[timeUnit][tag] += revenue;
+          });
         });
       });
-
+  
       return acc;
     }, {});
-
+  
     return groupedData;
   }, [bookingData2, selectedTags, filter3, startDate1, endDate1]);
-
+  
   const chartDataRevenue = useMemo(() => {
     const selectedData = transformedRevenueData || {};
 
@@ -521,54 +509,54 @@ const TagwiseReport = () => {
 
   const transformedProfitabilityData = useMemo(() => {
     if (!bookingData2 || !selectedTags.length) return {};
-
+  
     const past7DaysRange = generatePast7Days();
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth();
     const fiscalStartMonth = 3;
-
+  
     const groupedData = bookingData2.reduce((acc, booking) => {
-      const totalOperationalCost = (booking?.campaign?.spaces?.operationalCosts || []).reduce(
-        (sum, cost) => sum + cost.amount,
-        0,
-      );
-
-      const detailsWithTags = booking.details.filter(detail => {
-        const campaign = detail.campaign;
-        if (!campaign || !campaign.spaces || !Array.isArray(campaign.spaces)) return false;
-
-        return campaign.spaces.some(space => {
-          const spaceTags = space.specifications?.additionalTags || [];
-          return Array.isArray(spaceTags) && selectedTags.some(tag => spaceTags.includes(tag));
-        });
-      });
-
-      if (detailsWithTags.length === 0) return acc;
-
-      detailsWithTags.forEach(detail => {
-        const date = new Date(detail.createdAt);
+      // Calculate total operational costs for the booking
+      const totalOperationalCost =
+        booking?.clientDetail?.operationalCosts?.reduce((sum, cost) => sum + cost.amount, 0) || 0;
+  
+      // Filter details that match the selected tags
+      const detailsWithTags = Array.isArray(booking.campaign)
+        ? booking.campaign.flatMap(campaign =>
+            campaign.spaces.flat().filter(space => {
+              const spaceTags = space?.specifications?.additionalTags || [];
+              return selectedTags.some(tag => spaceTags.includes(tag));
+            }),
+          )
+        : [];
+  
+      if (!detailsWithTags.length) return acc;
+  
+      detailsWithTags.forEach(space => {
+        const date = new Date(booking.createdAt);
         const year = date.getFullYear();
         const month = date.getMonth();
         const day = date.getDate();
-        const formattedDay = `${month + 1}/${day}`;
-
-        const revenue = booking.totalAmount;
-
+        const formattedDay = `${month + 1}/${day}`; // Format as "MM/DD"
+  
+        const revenue = booking.clientDetail?.totalAmount || 0;
+  
+        // Calculate profitability percentage
         const profitability =
           revenue > 0 ? (((revenue - totalOperationalCost) / revenue) * 100).toFixed(2) : 0;
-
+  
         selectedTags.forEach(tag => {
-          const tagMatches = detail.campaign.spaces.some(space =>
-            space.specifications?.additionalTags?.includes(tag),
-          );
-          if (!tagMatches) return;
-
+          const spaceTags = space?.specifications?.additionalTags || [];
+          if (!spaceTags.includes(tag)) return;
+  
           let timeUnit;
-
+  
+          // Calculate fiscal year, month, and quarter
           const fiscalYear = month >= fiscalStartMonth ? year : year - 1;
           const fiscalMonth = (month + 12 - fiscalStartMonth) % 12;
           const fiscalQuarter = Math.ceil((fiscalMonth + 1) / 3);
-
+  
+          // Determine timeUnit based on filter3
           if (filter3 === 'past10Years' && fiscalYear >= currentYear - 10) {
             timeUnit = fiscalYear;
           } else if (filter3 === 'past5Years' && fiscalYear >= currentYear - 5) {
@@ -598,22 +586,22 @@ const TagwiseReport = () => {
             ];
             timeUnit = quarterNames[fiscalQuarter - 1];
           }
-
+  
           if (!timeUnit) return;
-
+  
           if (!acc[timeUnit]) acc[timeUnit] = {};
           if (!acc[timeUnit][tag]) acc[timeUnit][tag] = 0;
-
+  
           acc[timeUnit][tag] += parseFloat(profitability);
         });
       });
-
+  
       return acc;
     }, {});
-
+  
     return groupedData;
   }, [bookingData2, selectedTags, filter3, startDate1, endDate1]);
-
+  
   const chartDataProfitability = useMemo(() => {
     const selectedData = transformedProfitabilityData || {};
 
@@ -1064,22 +1052,39 @@ const TagwiseReport = () => {
             />
           </div>
         )}
-        <div className="my-4">
-          <Line
-            data={activeView5 === 'revenue' ? chartDataRevenue : chartDataProfitability}
-            options={activeView5 === 'revenue' ? chartOptionsRevenue : chartOptionsProfitability}
-            ref={chartRef}
-            plugins={[ChartDataLabels]}
-          />
-        </div>
-      </div>
-      <div className={classNames("px-5 md:col-span-12 lg:col-span-10 border-gray-450 overflow-auto", isReport?'w-[47rem]':'')}>
-        <Table1
-          COLUMNS={activeView5 === 'revenue' ? tableColumnsRevenue : tableColumnsProfitability}
-          data={activeView5 === 'revenue' ? tableDataRevenue : tableDataProfitability}
-          showPagination={false}
-        />
-      </div>
+       {isLoadingBookingData ? (
+  <div className="flex justify-center items-center h-64">
+    <Loader />
+  </div>
+) : (
+  <div className="my-4">
+    {/* Line Chart */}
+    <div className="mb-6">
+      <Line
+        data={activeView5 === 'revenue' ? chartDataRevenue : chartDataProfitability}
+        options={activeView5 === 'revenue' ? chartOptionsRevenue : chartOptionsProfitability}
+        ref={chartRef}
+        plugins={[ChartDataLabels]}
+      />
+    </div>
+
+    {/* Table Section */}
+    <div
+      className={classNames(
+        "px-5 md:col-span-12 lg:col-span-10 border-gray-450 overflow-auto",
+        isReport ? 'w-[47rem]' : ''
+      )}
+    >
+      <Table1
+        COLUMNS={activeView5 === 'revenue' ? tableColumnsRevenue : tableColumnsProfitability}
+        data={activeView5 === 'revenue' ? tableDataRevenue : tableDataProfitability}
+        showPagination={false}
+      />
+    </div>
+  </div>
+)}
+</div>
+    
     </div>
   );
 };

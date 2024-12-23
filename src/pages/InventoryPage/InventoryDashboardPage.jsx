@@ -43,6 +43,7 @@ import SpaceNamePhotoContent from '../../components/modules/inventory/SpaceNameP
 import VacantInventoryFilter from '../../components/modules/inventory/VacantInventoryFilterContent';
 import { DATE_FORMAT } from '../../utils/constants';
 import InventoryPreviewImage from '../../components/shared/InventoryPreviewImage';
+import { useFormContext } from 'react-hook-form';
 
 dayjs.extend(isBetween);
 
@@ -69,7 +70,6 @@ const InventoryDashboardPage = () => {
     }),
     shallow,
   );
-  console.log("acti", activeLayout)
   const [searchParams, setSearchParams] = useSearchParams({
     limit: activeLayout.inventoryLimit || 20,
     page: 1,
@@ -77,6 +77,7 @@ const InventoryDashboardPage = () => {
     sortBy: 'createdAt',
     isActive: true,
   });
+  const form1 = useFormContext();
   const { data: inventoryData, isLoading: isInventoryDataLoading } = useFetchInventory(
     searchParams.toString(),
   );
@@ -347,10 +348,10 @@ const InventoryDashboardPage = () => {
   const handleSearch = () => {
     searchParams.set('search', debouncedSearch);
     searchParams.set('page', debouncedSearch === '' ? page : 1);
-    if (debouncedSearch !== '') {
-      searchParams.delete('sortBy');
-      searchParams.delete('sortOrder');
-    }
+    // if (debouncedSearch !== '') {
+    //   searchParams.delete('sortBy');
+    //   searchParams.delete('sortOrder');
+    // }
     setSearchParams(searchParams);
   };
 
@@ -360,8 +361,13 @@ const InventoryDashboardPage = () => {
     setSearchParams(searchParams);
   };
 
-  const handleSelection = selectedRows => form.setFieldValue('spaces', selectedRows);
+  const handleSelection = selectedRows => form.setFieldValue('spaces', selectedRows);  // Update spaces
+  const watchSpaces = form.values.spaces || [];  // Get spaces from form state
 
+  const selectedInventoryIds = useMemo(
+    () => watchSpaces.map(space => space._id).filter(Boolean),
+    [watchSpaces]
+  );
   const handleDeleteInventories = formData => {
     let data = {};
     data = formData.spaces.map(item => item._id);
@@ -429,7 +435,7 @@ const InventoryDashboardPage = () => {
       ...modalConfig,
     });
   };
-
+ 
   const toggleShareOptions = () => {
     modals.openModal({
       modalId: 'shareInventoryOption',
@@ -437,6 +443,7 @@ const InventoryDashboardPage = () => {
       children: (
         <ShareContent
           shareType="inventory"
+          selectedInventoryIds={selectedInventoryIds}
           searchParamQueries={searchParams}
           onClose={() => modals.closeModal('shareInventoryOption')}
         />

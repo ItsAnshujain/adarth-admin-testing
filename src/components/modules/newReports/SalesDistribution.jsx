@@ -19,7 +19,9 @@ import {
   LogarithmicScale,
   Chart,
 } from 'chart.js';
-import { useBookingsNew } from '../../../apis/queries/booking.queries';
+import {
+  usebookingsSalesDistribution,
+} from '../../../apis/queries/booking.queries';
 import { Download } from 'react-feather';
 import html2pdf from 'html2pdf.js';
 import { serialize } from '../../../utils';
@@ -51,65 +53,50 @@ const monthsInShort = [
   'Mar',
 ];
 const SalesDistribution = () => {
-
   const chartRef = useRef(null); // Reference to the chart instance
 
-  const { data: bookingData2, isLoading: isLoadingBookingData } = useBookingsNew(
-    serialize({ page: 1, limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' }),
-  );
-  const currentFinancialYear = date => {
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    return month >= 4 ? `${year}-${year + 1}` : `${year - 1}-${year}`;
-  };
+  const { data: bookingData, isLoading: isLoadingBookingData } = usebookingsSalesDistribution();
 
-  const aggregatedData3 = useMemo(() => {
-    if (!bookingData2) {
-      return {
-        sales: monthsInShort.reduce((acc, month) => {
-          acc[month] = { government: 0, nationalagency: 0, localagency: 0, directclient: 0 };
-          return acc;
-        }, {}),
-      };
+  const salesData = useMemo(() => {
+    if (!bookingData || bookingData.length === 0) {
+      return monthsInShort.map(() => ({
+        government: 0,
+        nationalAgency: 0,
+        localAgency: 0,
+        directClient: 0,
+        total: 0,
+      }));
     }
 
-    const result = {
-      sales: monthsInShort.reduce((acc, month) => {
-        acc[month] = { government: 0, nationalagency: 0, localagency: 0, directclient: 0 };
-        return acc;
-      }, {}),
+    const clientTypeMapping = {
+      government: 'government',
+      'directclient': 'directClient',
+      'direct client': 'directClient',
+      'nationalagency': 'nationalAgency',
+      'national agency': 'nationalAgency',
+      'localagency': 'localAgency',
+      'local agency': 'localAgency',
     };
 
-    bookingData2.forEach(booking => {
-      const bookingDate = new Date(booking.createdAt);
-      const fy = currentFinancialYear(bookingDate);
+    const aggregatedSales = monthsInShort.reduce((acc, month) => {
+      acc[month] = { government: 0, nationalAgency: 0, localAgency: 0, directClient: 0, total: 0 };
+      return acc;
+    }, {});
 
-      if (fy === currentFinancialYear(new Date())) {
-        const totalAmount = booking?.totalAmount || 0;
+    bookingData.forEach(({ createdAt, totalAmount, client }) => {
+      const monthKey = new Date(createdAt).toLocaleString('default', { month: 'short' });
+      const clientType =
+        clientTypeMapping[client?.clientType?.toLowerCase()?.replace(/\s/g, '')] || 'unknown';
 
-        if (Array.isArray(booking.details) && booking.details.length > 0) {
-          booking.details.forEach(detail => {
-            const clientType = detail?.client?.clientType?.toLowerCase().replace(/\s/g, '');
-
-            const monthKey = bookingDate.toLocaleString('default', { month: 'short' });
-            if (result.sales[monthKey] && clientType) {
-              result.sales[monthKey][clientType] += totalAmount / 100000;
-            }
-          });
-        }
+      if (aggregatedSales[monthKey] && clientType !== 'unknown') {
+        const amountInLacs = totalAmount / 100000; // Convert to lakhs
+        aggregatedSales[monthKey][clientType] += amountInLacs;
+        aggregatedSales[monthKey].total += amountInLacs;
       }
     });
 
-    return result;
-  }, [bookingData2]);
-
-  const totalSalesByMonth = useMemo(
-    () =>
-      Object.values(aggregatedData3.sales).map(
-        item => item.government + item.nationalagency + item.localagency + item.directclient,
-      ),
-    [aggregatedData3],
-  );
+    return monthsInShort.map(month => aggregatedSales[month]);
+  }, [bookingData]);
 
   const barChartOptions = useMemo(
     () => ({
@@ -168,7 +155,30 @@ const SalesDistribution = () => {
     }),
     [],
   );
-
+  const barData = useMemo(
+    () => ({
+      labels: monthsInShort,
+      datasets: [
+        { label: 'Government', data: salesData.map(d => d.government), backgroundColor: '#FF6384' },
+        {
+          label: 'National Agency',
+          data: salesData.map(d => d.nationalAgency),
+          backgroundColor: '#36A2EB',
+        },
+        {
+          label: 'Local Agency',
+          data: salesData.map(d => d.localAgency),
+          backgroundColor: '#FFCE56',
+        },
+        {
+          label: 'Direct Client',
+          data: salesData.map(d => d.directClient),
+          backgroundColor: '#4BC0C0',
+        },
+      ],
+    }),
+    [salesData],
+  );
   const stackedBarOptions = useMemo(
     () => ({
       responsive: true,
@@ -187,6 +197,7 @@ const SalesDistribution = () => {
           },
           stacked: true,
           beginAtZero: true,
+          max: 100, // Limit Y-axis to 100%
           ticks: {
             callback: value => `${value}%`,
           },
@@ -228,34 +239,6 @@ const SalesDistribution = () => {
     }),
     [],
   );
-  const barData = useMemo(
-    () => ({
-      labels: monthsInShort,
-      datasets: [
-        {
-          label: 'Government',
-          data: Object.values(aggregatedData3.sales).map(item => item.government),
-          backgroundColor: '#FF6384',
-        },
-        {
-          label: 'National Agency',
-          data: Object.values(aggregatedData3.sales).map(item => item.nationalagency),
-          backgroundColor: '#36A2EB',
-        },
-        {
-          label: 'Local Agency',
-          data: Object.values(aggregatedData3.sales).map(item => item.localagency),
-          backgroundColor: '#FFCE56',
-        },
-        {
-          label: 'Direct Client',
-          data: Object.values(aggregatedData3.sales).map(item => item.directclient),
-          backgroundColor: '#4BC0C0',
-        },
-      ],
-    }),
-    [aggregatedData3],
-  );
 
   const percentageBarData = useMemo(
     () => ({
@@ -263,44 +246,37 @@ const SalesDistribution = () => {
       datasets: [
         {
           label: 'Government',
-          data: Object.values(aggregatedData3.sales).map((item, idx) =>
-            totalSalesByMonth[idx]
-              ? ((item.government / totalSalesByMonth[idx]) * 100).toFixed(2)
-              : 0,
+          data: salesData.map((item, idx) =>
+            item.total ? ((item.government / item.total) * 100).toFixed(2) : 0,
           ),
           backgroundColor: '#FF6384',
         },
         {
           label: 'National Agency',
-          data: Object.values(aggregatedData3.sales).map((item, idx) =>
-            totalSalesByMonth[idx]
-              ? ((item.nationalagency / totalSalesByMonth[idx]) * 100).toFixed(2)
-              : 0,
+          data: salesData.map((item, idx) =>
+            item.total ? ((item.nationalAgency / item.total) * 100).toFixed(2) : 0,
           ),
           backgroundColor: '#36A2EB',
         },
         {
           label: 'Local Agency',
-          data: Object.values(aggregatedData3.sales).map((item, idx) =>
-            totalSalesByMonth[idx]
-              ? ((item.localagency / totalSalesByMonth[idx]) * 100).toFixed(2)
-              : 0,
+          data: salesData.map((item, idx) =>
+            item.total ? ((item.localAgency / item.total) * 100).toFixed(2) : 0,
           ),
           backgroundColor: '#FFCE56',
         },
         {
           label: 'Direct Client',
-          data: Object.values(aggregatedData3.sales).map((item, idx) =>
-            totalSalesByMonth[idx]
-              ? ((item.directclient / totalSalesByMonth[idx]) * 100).toFixed(2)
-              : 0,
+          data: salesData.map((item, idx) =>
+            item.total ? ((item.directClient / item.total) * 100).toFixed(2) : 0,
           ),
           backgroundColor: '#4BC0C0',
         },
       ],
     }),
-    [aggregatedData3, totalSalesByMonth],
+    [salesData],
   );
+
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
   //For Pdf Download
   const [isDownloadPdfLoading, setIsDownloadPdfLoading] = useState(false);
@@ -345,7 +321,10 @@ const SalesDistribution = () => {
   };
   return (
     <div className="flex flex-col pt-4">
-      <div id="Sales_distribution" className={classNames('p-6', isReport?'w-[37rem]':'w-[47rem]')}>
+      <div
+        id="Sales_distribution"
+        className={classNames('p-6', isReport ? 'w-[37rem]' : 'w-[47rem]')}
+      >
         <div className="flex justify-between items-center">
           <p className="font-bold">Monthly Sales Distribution</p>
           {isReport ? null : (
@@ -369,17 +348,20 @@ const SalesDistribution = () => {
             <Loader />
           </div>
         ) : (
-            <div className="my-4">
-              <Bar
-                ref={chartRef}
-                data={barData}
-                options={barChartOptions}
-                plugins={[ChartDataLabels]}
-              />
+          <div className="my-4">
+            <Bar
+              ref={chartRef}
+              data={barData}
+              options={barChartOptions}
+              plugins={[ChartDataLabels]}
+            />
           </div>
         )}
       </div>
-      <div className={classNames('px-6 pb-6', isReport?'w-[37rem]':'w-[47rem]')} id="Percentage_contribution">
+      <div
+        className={classNames('px-6 pb-6', isReport ? 'w-[37rem]' : 'w-[47rem]')}
+        id="Percentage_contribution"
+      >
         <div className="flex justify-between items-center">
           <p className="font-bold">Monthly Percentage Contribution</p>
           {isReport ? null : (
@@ -403,14 +385,14 @@ const SalesDistribution = () => {
             <Loader />
           </div>
         ) : (
-            <div className="my-4">
-              <Bar
-                ref={chartRef}
-                data={percentageBarData}
-                options={stackedBarOptions}
-                plugins={[ChartDataLabels]}
-              />
-            </div>
+          <div className="my-4">
+            <Bar
+              ref={chartRef}
+              data={percentageBarData}
+              options={stackedBarOptions}
+              plugins={[ChartDataLabels]}
+            />
+          </div>
         )}
       </div>
     </div>

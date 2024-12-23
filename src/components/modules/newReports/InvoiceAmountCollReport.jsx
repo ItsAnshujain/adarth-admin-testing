@@ -18,7 +18,7 @@ import {
   Title,
   LogarithmicScale,
 } from 'chart.js';
-import { useBookings, usebookingsWithDetails } from '../../../apis/queries/booking.queries';
+import { useBookings, useBookingsDistributionCollected, usebookingsWithDetails, usebookingsWithDetailsNew } from '../../../apis/queries/booking.queries';
 import GaugeChart from './GaugeChart';
 import InvoiceReportChart from './InvoiceReportChart';
 import { generateSlNo, serialize } from '../../../utils';
@@ -58,14 +58,7 @@ const list1 = [
 const InvoiceAmountCollReport = () => {
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
-  const { data: bookingData, isLoading: isLoadingBookingData } = usebookingsWithDetails(
-    serialize({
-      page: 1,
-      limit: 400,
-      sortBy: 'createdAt',
-      sortOrder: 'desc',
-    }),
-  );
+  const { data: bookingData, isLoading: isLoadingBookingData } = useBookingsDistributionCollected();
   const [startDate2, setStartDate2] = useState(null);
   const [endDate2, setEndDate2] = useState(null);
   const today = new Date();
@@ -128,7 +121,7 @@ const InvoiceAmountCollReport = () => {
 
     const grouped1 = {};
 
-    data.docs.forEach(doc => {
+    data.forEach(doc => {
       const date = new Date(doc.createdAt);
       const monthYearKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
 
@@ -180,7 +173,7 @@ const InvoiceAmountCollReport = () => {
 
       return yearA !== yearB ? yearB - yearA : monthB - monthA;
     });
-  }, [bookingData?.docs, activeView1, startDate2, endDate2]);
+  }, [bookingData, activeView1, startDate2, endDate2]);
 
   const column1 = useMemo(
     () => [

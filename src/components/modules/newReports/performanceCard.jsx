@@ -14,12 +14,11 @@ import { serialize } from '../../../utils';
 const PerformanceCard = () => {
   const { data: inventoryReportList, isLoading: inventoryReportListLoading } =
     useFetchInventoryReportList(serialize({
-      limit: 1000,
+      limit: 10000,
       page: 1,
       sortOrder: 'desc',
       sortBy: 'revenue',
     }));
-
   const topSpaceByBookings = inventoryReportList?.docs.reduce((prev, curr) =>
     prev.totalBookings > curr.totalBookings ? prev : curr,
   );

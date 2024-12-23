@@ -35,7 +35,7 @@ const ProposalsMenuPopover = ({
   return (
     <Menu shadow="md" width={150} withinPortal>
       <Menu.Target>
-        <Button className="py-0" onClick={e => e.preventDefault()}>
+        <Button className="py-0 bg-white" onClick={e => e.preventDefault()}>
           <MenuIcon />
         </Button>
       </Menu.Target>

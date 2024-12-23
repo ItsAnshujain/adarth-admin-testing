@@ -7,7 +7,7 @@ const ProposalDetails = () => {
   // proposals data
   const [searchParams4, setSearchParams4] = useSearchParams({
     page: 1,
-    limit: 1000,
+    limit: 450,
     sortBy: 'createdAt',
     sortOrder: 'desc',
   });

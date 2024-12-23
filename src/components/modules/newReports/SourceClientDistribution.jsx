@@ -18,7 +18,7 @@ import {
   Title,
   LogarithmicScale,
 } from 'chart.js';
-import { useBookingsNew } from '../../../apis/queries/booking.queries';
+import { usebookingsRevenueBreakup, useBookingsSalesOverview } from '../../../apis/queries/booking.queries';
 import classNames from 'classnames';
 import html2pdf from 'html2pdf.js';
 import { Download } from 'react-feather';
@@ -79,7 +79,7 @@ const barDataConfigByClient = {
   options: {
     responsive: true,
     maintainAspectRatio: false,
-    radius: '90%',
+    radius: '73%',
     plugins: {
       legend: {
         display: true,
@@ -102,46 +102,40 @@ const barDataConfigByClient = {
     },
   },
 };
-const clientTypeLabels = {
-  government: 'Government',
-  nationalagency: 'National Agency',
-  localagency: 'Local Agency',
-  directclient: 'Direct Client',
-};
+
 const SourceClientDistribution = () => {
   const isReport = new URLSearchParams(window.location.search).get('share') === 'report';
 
   const chartRef = useRef(null);
 
-  const { data: bookingData, isLoading: isLoadingBookingData } = useBookingsNew(
-    serialize({ page: 1, limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' }),
-  );
+  const { data: bookingData, isLoading: isLoadingBookingData } = usebookingsRevenueBreakup();
+  const { data: bookingData1, isLoading: isLoadingBookingData1 } = useBookingsSalesOverview();
 
   // Calculate Own and Traded Site Revenues
   const calculateSiteRevenues = bookingData => {
+    if (!Array.isArray(bookingData)) return { ownSiteRevenue: 0, tradedSiteRevenue: 0 };
+
     let ownSiteRevenue = 0;
     let tradedSiteRevenue = 0;
 
-    bookingData?.forEach(booking => {
-      booking.details.forEach(detail => {
-        detail.campaign.spaces.forEach(space => {
-          if (space.tradedAmount === 0) {
-            ownSiteRevenue += space.totalPrice || 0;
+    bookingData.forEach(booking => {
+
+          if (booking.totalTradedAmount === 0) {
+            ownSiteRevenue += booking.totalPrice || 0;
           } else {
-            tradedSiteRevenue += space.totalPrice || 0;
+            tradedSiteRevenue += booking.totalPrice || 0;
           }
-        });
-      });
     });
+
     return {
-      ownSiteRevenue: (ownSiteRevenue / 100000).toFixed(2), // Convert to lac and format to 2 decimal places
-      tradedSiteRevenue: (tradedSiteRevenue / 100000).toFixed(2), // Convert to lac and format to 2 decimal places
+      ownSiteRevenue: (ownSiteRevenue / 100000).toFixed(2),
+      tradedSiteRevenue: (tradedSiteRevenue / 100000).toFixed(2),
     };
   };
 
   const { ownSiteRevenue, tradedSiteRevenue } = useMemo(
-    () => calculateSiteRevenues(bookingData),
-    [bookingData],
+    () => calculateSiteRevenues(bookingData1),
+    [bookingData1],
   );
 
   const printSitesData = useMemo(
@@ -196,60 +190,35 @@ const SourceClientDistribution = () => {
     },
   };
   const aggregatedData = useMemo(() => {
-    if (!bookingData) return {};
-
-    const validClientTypes = Object.keys(clientTypeLabels);
-
-    const result = {
-      government: 0,
-      nationalagency: 0,
-      localagency: 0,
-      directclient: 0,
-    };
-
-    bookingData.forEach(booking => {
-      const totalAmount = booking?.totalAmount || 0;
-
-      if (Array.isArray(booking.details) && booking.details.length > 0) {
-        booking.details.forEach(detail => {
-          const clientType = detail?.client?.clientType;
-
-          if (clientType) {
-            const normalizedClientType = clientType.toLowerCase().replace(/\s/g, '');
-            if (validClientTypes.includes(normalizedClientType)) {
-              result[normalizedClientType] += totalAmount / 100000;
-            }
-          }
-        });
-      }
-    });
-
-    return result;
-  }, [bookingData]);
-
-  const pieChartData = useMemo(() => {
-    const labels = Object.keys(aggregatedData).map(clientType => clientTypeLabels[clientType]); // Use the mapping for labels
-    const data = Object.values(aggregatedData);
-
+    if (
+      !bookingData ||
+      !Array.isArray(bookingData) ||
+      !bookingData[0]?.clientTypes
+    ) {
+      return { labels: [], datasets: [{ data: [] }] }; // Return an empty dataset
+    }
+  
+    const filteredClientTypes = bookingData[0].clientTypes.filter(
+      client => client.clientType
+    );
+    const clientTypes = filteredClientTypes.map(client => client.clientType);
+    const totalAmounts = filteredClientTypes.map(
+      client => client.totalAmount / 100000
+    );
+  
     return {
-      labels,
+      labels: clientTypes,
       datasets: [
         {
           label: 'Revenue by Client Type',
-          data,
+          data: totalAmounts,
           ...barDataConfigByClient.styles,
         },
       ],
     };
-  }, [aggregatedData]);
-
-  const [updatedClient, setUpdatedClient] = useState(pieChartData);
-
-  useEffect(() => {
-    if (bookingData) {
-      setUpdatedClient(pieChartData);
-    }
-  }, [pieChartData, bookingData]);
+  }, [bookingData]);
+  
+ 
 
   //For Pdf Download
   const [isDownloadPdfLoading, setIsDownloadPdfLoading] = useState(false);
@@ -314,9 +283,9 @@ const SourceClientDistribution = () => {
           This chart shows the revenue split between "Own Sites" and "Traded Sites".
         </p>
         <div className="w-72 justify-center mx-6">
-          {isLoadingBookingData ? (
+          {isLoadingBookingData1 ? (
             <Loader className="mx-auto" />
-          ) : printSitesData.ownSiteRevenue === 0 && printSitesData.tradedSiteRevenue === 0 ? (
+          ) : Number(ownSiteRevenue) === 0 && Number(tradedSiteRevenue) === 0 ? (
             <p className="text-center">NA</p>
           ) : (
             <Doughnut
@@ -349,21 +318,22 @@ const SourceClientDistribution = () => {
           Agencies", "National Agencies", and "Government".
         </p>
         <div className="w-72 justify-center mx-6">
-          {isLoadingBookingData ? (
-            <Loader className="mx-auto" />
-          ) : updatedClient.datasets[0].data.every(value => value === 0) ? (
-            <p className="text-center">NA</p>
-          ) : (
-            <Pie
-              data={updatedClient}
-              options={barDataConfigByClient.options}
-              height={200}
-              width={200}
-              ref={chartRef}
-              plugins={[ChartDataLabels, customLinesPlugin]}
-            />
-          )}
-        </div>
+  {isLoadingBookingData ? (
+    <Loader className="mx-auto" />
+  ) : !aggregatedData.datasets?.length || !aggregatedData.datasets[0]?.data?.length ? (
+    <p className="text-center">NA</p>
+  ) : (
+    <Pie
+      data={aggregatedData}
+      options={barDataConfigByClient.options}
+      height={200}
+      width={200}
+      ref={chartRef}
+      plugins={[ChartDataLabels, customLinesPlugin]}
+    />
+  )}
+</div>
+
       </div>
     </div>
   );

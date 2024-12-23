@@ -27,6 +27,13 @@ import {
   exportBooking,
   bookingsNew,
   bookingsWithDetails,
+  bookingsWithDetailsNew,
+  bookingsRevenueBreakup,
+  bookingsSalesDistribution,
+  bookingsClientDetails,
+  bookingsDistributionCollected,
+  bookingsSalesOverview,
+  bookingsCategoryAdditional,
 } from '../requests/booking.requests';
 import { onApiError } from '../../utils';
 
@@ -63,6 +70,84 @@ export const usebookingsWithDetails = (filter, enabled = true) =>
       enabled: !!enabled,
     },
   );
+export const usebookingsWithDetailsNew = ( enabled = true) =>
+  useQuery({
+    queryKey: ['bookings-withDetailsNew'],
+    queryFn:async () => {
+      const res = await bookingsWithDetailsNew();
+      return res?.data;
+    },
+    
+    enabled: !!enabled,
+    
+  });
+export const usebookingsRevenueBreakup = ( enabled = true) =>
+  useQuery({
+    queryKey: ['bookings-revenueBreakup'],
+    queryFn:async () => {
+      const res = await bookingsRevenueBreakup();
+      return res?.data;
+    },
+    
+    enabled: !!enabled,
+    
+  });
+export const usebookingsSalesDistribution = ( enabled = true) =>
+  useQuery({
+    queryKey: ['bookings-salesDistribution'],
+    queryFn:async () => {
+      const res = await bookingsSalesDistribution();
+      return res?.data;
+    },
+    
+    enabled: !!enabled,
+    
+  });
+export const useBookingsClientDetails = ( enabled = true) =>
+  useQuery({
+    queryKey: ['bookings-clientDetails'],
+    queryFn:async () => {
+      const res = await bookingsClientDetails();
+      return res?.data;
+    },
+    
+    enabled: !!enabled,
+    
+  });
+
+export const useBookingsDistributionCollected = ( enabled = true) =>
+  useQuery({
+    queryKey: ['bookings-DistributionCollected'],
+    queryFn:async () => {
+      const res = await bookingsDistributionCollected();
+      return res?.data;
+    },
+    
+    enabled: !!enabled,
+    
+  });
+export const useBookingsSalesOverview = ( enabled = true) =>
+  useQuery({
+    queryKey: ['bookings-SalesOverview'],
+    queryFn:async () => {
+      const res = await bookingsSalesOverview();
+      return res?.data;
+    },
+    
+    enabled: !!enabled,
+    
+  });
+export const useBookingsCategoryAdditional = ( enabled = true) =>
+  useQuery({
+    queryKey: ['bookings-CategoryAdditional'],
+    queryFn:async () => {
+      const res = await bookingsCategoryAdditional();
+      return res?.data;
+    },
+    
+    enabled: !!enabled,
+    
+  });
 
 export const useBookingById = (id, enabled = true) =>
   useQuery(

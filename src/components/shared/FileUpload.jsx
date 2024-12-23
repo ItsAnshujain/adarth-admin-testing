@@ -11,14 +11,12 @@ const FileUpload = () => {
   const [file, setFile] = useState(null);
 
   const { mutate, isLoading } = useCsvImport();
-
+  
   const { getRootProps, getInputProps, open } = useDropzone({
-    accept: {
-      'application/file': ['.csv'],
-    },
+    accept:"text/csv", // Only allow CSV files
     disabled: isLoading,
     multiple: false,
-    onDrop: useCallback(acceptedFiles => {
+    onDrop: useCallback((acceptedFiles) => {
       setFile(acceptedFiles[0]);
     }, []),
   });
@@ -55,7 +53,7 @@ const FileUpload = () => {
         className="h-[40%] border-2 border-dashed border-slate-300 bg-[#F9FAFD] ml-5 mr-7 mt-4 flex flex-col items-center justify-center "
       >
         <FilePlus onClick={open} size={34} className={file ? 'text-green-500' : 'text-slate-400'} />
-        <input type="hidden" {...getInputProps()} accept=".xlsx, .xls, .csv" />
+        <input type="hidden" {...getInputProps()} accept="text/csv"/>
 
         {file ? (
           <p className="mt-2 mb-3">{file.name}</p>

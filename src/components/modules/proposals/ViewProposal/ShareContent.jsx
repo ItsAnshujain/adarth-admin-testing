@@ -1,5 +1,5 @@
 import { Box, Button, Checkbox, Group, Image, Radio } from '@mantine/core';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Mail, Link as LinkIcon, MessageSquare, ChevronDown } from 'react-feather';
 import classNames from 'classnames';
@@ -142,6 +142,7 @@ const schemas = {
 const ShareContent = ({
   shareType,
   searchParamQueries,
+  selectedInventoryIds,
   id,
   onClose,
   versionTitle,
@@ -159,8 +160,7 @@ const ShareContent = ({
 
   const shareProposal = useShareProposal();
   const shareCustomProposal = useShareCustomProposal();
-  const shareInventory = useShareInventory();
-
+  
   const handleActiveFileType = value => {
     let tempArr = [...activeFileType]; // TODO: use immmer
     if (tempArr.some(item => item === value)) {
@@ -176,16 +176,15 @@ const ShareContent = ({
     }
     setActiveFileType(tempArr);
   };
-
+  
   const handleActiveShare = value => setActiveShare(value);
-
+  const shareInventory = useShareInventory();
+  
   const watchAspectRatio = form.watch('aspectRatio');
-
-  // validation
-
-  // validation
+  
 
   const onSubmit = form.handleSubmit(async formData => {
+  
     const data = { ...formData, clientCompanyName: formData.clientCompany || undefined };
     if (!activeFileType.length) {
       showNotification({
@@ -195,6 +194,17 @@ const ShareContent = ({
     }
     const aspectRatio = watchAspectRatio.split(';')[0];
     const templateType = watchAspectRatio.split(';')[1];
+
+    const data1 = {
+      ...formData,
+      clientCompanyName: formData.clientCompany || undefined,
+      format: activeFileType.join(','),
+      shareVia: activeShare,
+      aspectRatio: 'fill',
+      templateType: 'generic',
+      inventoryIds: selectedInventoryIds,
+    };
+    console.log("Payload for shareInventory:", data1);
 
     data.format = activeFileType.join(',');
     data.shareVia = activeShare;
@@ -314,11 +324,11 @@ const ShareContent = ({
       });
 
       const inventoryResponse = await shareInventory.mutateAsync(
-        { queries: serialize({ ...params, utcOffset: dayjs().utcOffset() }), data },
+        { queries: serialize({ ...params, utcOffset: dayjs().utcOffset() }), data1 },
         {
           onSuccess: () => {
             setActiveFileType([]);
-            if (data.shareVia !== 'copy_link') {
+            if (data1.shareVia !== 'copy_link') {
               showNotification({
                 title: 'Inventories have been shared successfully',
                 color: 'green',
@@ -342,6 +352,7 @@ const ShareContent = ({
   });
 
   const handleDownload = form.handleSubmit(async formData => {
+   
     if (!activeFileType.length) {
       showNotification({
         title: 'Please select a file type to continue',
@@ -372,7 +383,10 @@ const ShareContent = ({
       subject: formData.subject,
       clientCompanyName: formData.clientCompany || undefined,
     };
-
+    const data1 = {
+      ...data,
+      inventoryIds: selectedInventoryIds,
+    };
     if (watchAspectRatio) {
       if (templateType != 'custom') {
         data.aspectRatio = aspectRatio;
@@ -429,12 +443,13 @@ const ShareContent = ({
 
     if (shareType === 'inventory') {
       const params = {};
+      
       searchParamQueries.forEach((value, key) => {
         params[key] = value;
       });
 
       const inventoryResponse = await shareInventory.mutateAsync(
-        { queries: serialize({ ...params, page: 1, utcOffset: dayjs().utcOffset() }), data },
+        { queries: serialize({ ...params, page: 1, utcOffset: dayjs().utcOffset() }), data:data1 },
         {
           onSuccess: () => {
             setActiveFileType([]);
@@ -446,13 +461,14 @@ const ShareContent = ({
           },
         },
       );
-      if (inventoryResponse?.proposalShare?.[data.format]) {
-        downloadPdf(inventoryResponse.proposalShare[data.format]);
+      if (inventoryResponse[data1.format]) {
+        downloadPdf(inventoryResponse[data1.format]);
         showNotification({
           title: 'Download successful',
           color: 'green',
         });
       }
+
     }
   });
 

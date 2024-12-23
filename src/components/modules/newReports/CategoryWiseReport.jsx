@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
 import dayjs from 'dayjs';
-import { Menu, Button } from '@mantine/core';
+import { Menu, Button, Loader } from '@mantine/core';
 import DateRangeSelector from '../../DateRangeSelector';
 import classNames from 'classnames';
 import quarterOfYear from 'dayjs/plugin/quarterOfYear';
@@ -21,7 +21,7 @@ import {
   LogarithmicScale,
   Chart,
 } from 'chart.js';
-import {  useBookingsNew } from '../../../apis/queries/booking.queries';
+import {  useBookingsCategoryAdditional, useBookingsNew, usebookingsWithDetailsNew } from '../../../apis/queries/booking.queries';
 import {  serialize } from '../../../utils';
 import html2pdf from 'html2pdf.js';
 import { Download } from 'react-feather';
@@ -65,9 +65,8 @@ const CategoryWiseReport = () => {
 
   const chartRef = useRef(null); // Reference to the chart instance
 
-  const { data: bookingData2, isLoading: isLoadingBookingData } = useBookingsNew(
-    serialize({ page: 1, limit: 1000, sortBy: 'createdAt', sortOrder: 'desc' }),
-  );
+  const { data: bookingData2, isLoading: isLoadingBookingData } = useBookingsCategoryAdditional();
+  console.log("booking data", bookingData2)
   const [startDate1, setStartDate1] = useState(null);
   const [endDate1, setEndDate1] = useState(null);
   const today = new Date();
@@ -93,100 +92,73 @@ const CategoryWiseReport = () => {
     if (bookingData2) {
       const categories = new Set();
       bookingData2.forEach(booking => {
-        if (booking?.details && Array.isArray(booking.details)) {
-          booking.details.forEach(detail => {
-            const campaign = detail.campaign;
-            if (campaign?.spaces && Array.isArray(campaign.spaces)) {
-              campaign.spaces.forEach(space => {
-                const category = space.basicInformation?.category?.[0]?.name;
+        if (Array.isArray(booking.campaign)) {
+          booking.campaign.forEach(campaign => {
+            if (Array.isArray(campaign.spaces)) {
+              campaign.spaces.flat().forEach(space => {
+                const category = space?.basicInformation?.category?.[0]?.name;
                 if (category) categories.add(category);
               });
             }
           });
         }
       });
-      setCategoryList([...categories]); // Only update the state if the category list changes
+      setCategoryList([...categories]); // Update state with unique categories
     }
   }, [bookingData2]);
-
+  
+  
   const transformedData4 = useMemo(() => {
     if (!bookingData2 || !secondFilter || !selectedCategory) return {};
-
-    const past7DaysRange = generatePast7Days(); // Ensure it returns dates in 'MM/DD/YYYY' format
+  
+    const past7DaysRange = generatePast7Days();
     const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth();
-    const fiscalStartMonth = 3; // Fiscal year starts in April (0-indexed)
-
+    const fiscalStartMonth = 3; // Fiscal year starts in April
+  
     const groupedData = bookingData2.reduce((acc, booking) => {
-      booking.details.forEach(detail => {
-        const campaign = detail.campaign;
-        if (!campaign || !campaign.spaces || !Array.isArray(campaign.spaces)) return;
-
-        campaign.spaces.forEach(space => {
-          const category = space.basicInformation?.category?.[0]?.name;
-          const subCategory = space.basicInformation?.subCategory?.name || 'Other Subcategory';
-          const date = new Date(detail.createdAt);
-          const year = date.getFullYear();
-          const month = date.getMonth();
-          const day = date.getDate();
-          const formattedDay = `${month + 1}/${day}`;
-          const revenue = booking.totalAmount;
-
+      if (!Array.isArray(booking.campaign)) return acc;
+  
+      booking.campaign.forEach(campaign => {
+        if (!Array.isArray(campaign.spaces)) return;
+  
+        campaign.spaces.flat().forEach(space => {
+          const category = space?.basicInformation?.category?.[0]?.name;
+          const subCategory = space?.basicInformation?.subCategory?.name || 'Other Subcategory';
+          const date = new Date(booking?.createdAt);
+          const revenue = booking?.clientDetail?.totalAmount || 0;
+  
           if (category !== selectedCategory) return;
-
-          let timeUnit;
-
-          const fiscalYear = month >= fiscalStartMonth ? year : year - 1;
-          const fiscalMonth = (month + 12 - fiscalStartMonth) % 12;
-          const fiscalQuarter = Math.ceil((fiscalMonth + 1) / 3);
-
-          if (
-            filter4 === 'past10Years' &&
-            fiscalYear >= currentYear - 10 &&
-            fiscalYear < currentYear
-          ) {
-            timeUnit = fiscalYear;
-          } else if (
-            filter4 === 'past5Years' &&
-            fiscalYear >= currentYear - 5 &&
-            fiscalYear < currentYear
-          ) {
-            timeUnit = fiscalYear;
-          } else if (filter4 === 'previousYear' && fiscalYear === currentYear - 1) {
-            timeUnit = new Date(0, month).toLocaleString('default', { month: 'short' });
-          } else if (filter4 === 'currentYear' && fiscalYear === currentYear) {
-            timeUnit = new Date(0, month).toLocaleString('default', { month: 'short' });
-          } else if (filter4 === 'currentMonth' && year === currentYear && month === currentMonth) {
-            timeUnit = day;
-          } else if (filter4 === 'past7' && past7DaysRange.includes(date.toLocaleDateString())) {
-            timeUnit = formattedDay;
-          } else if (
-            filter4 === 'customDate' &&
-            startDate1 &&
-            endDate1 &&
-            date.getTime() >= new Date(startDate1).setHours(0, 0, 0, 0) &&
-            date.getTime() <= new Date(endDate1).setHours(23, 59, 59, 999)
-          ) {
-            timeUnit = formattedDay;
-          } else if (filter4 === 'quarter' && fiscalYear === currentYear) {
-            const quarterly = Math.ceil((date.getMonth() + 1) / 3);
-            timeUnit = `Q${quarterly}`;
-          }
-
+  
+          const fiscalYear = date.getMonth() >= fiscalStartMonth 
+            ? date.getFullYear() 
+            : date.getFullYear() - 1;
+  
+          const determineTimeUnit = () => {
+            if (filter4 === 'past10Years' && fiscalYear >= currentYear - 10 && fiscalYear < currentYear)
+              return fiscalYear;
+            if (filter4 === 'past7' && past7DaysRange.includes(date.toLocaleDateString()))
+              return `${date.getMonth() + 1}/${date.getDate()}`;
+            if (filter4 === 'currentYear' && fiscalYear === currentYear)
+              return new Date(0, date.getMonth()).toLocaleString('default', { month: 'short' });
+            if (filter4 === 'quarter' && fiscalYear === currentYear)
+              return `Q${Math.ceil((date.getMonth() + 1) / 3)}`;
+            return null;
+          };
+  
+          const timeUnit = determineTimeUnit();
           if (!timeUnit) return;
-
-          if (!acc[subCategory]) acc[subCategory] = {};
-          if (!acc[subCategory][timeUnit]) acc[subCategory][timeUnit] = 0;
-
-          acc[subCategory][timeUnit] += revenue;
+  
+          acc[subCategory] = acc[subCategory] || {};
+          acc[subCategory][timeUnit] = (acc[subCategory][timeUnit] || 0) + revenue;
         });
       });
+  
       return acc;
     }, {});
-
+  
     return groupedData;
   }, [bookingData2, filter4, secondFilter, selectedCategory, startDate1, endDate1]);
-
+  
   const chartData4 = useMemo(() => {
     if (!transformedData4 || Object.keys(transformedData4).length === 0) {
       return { labels: [], datasets: [] };
@@ -255,10 +227,10 @@ const CategoryWiseReport = () => {
           formatter: (value, context) => {
             return value >= 1 ? Math.floor(value) : value.toFixed(1);
           },
-          color: '#000', // Label color
+          color: '#000', 
           font: {
             weight: 'light',
-            size: 12, // Increase the size for visibility
+            size: 12, 
           },
         },
         tooltip: {
@@ -269,7 +241,7 @@ const CategoryWiseReport = () => {
                 label += ': ';
               }
               if (context.parsed.y !== null) {
-                label += `${context.parsed.y.toFixed(2)} L`; // Tooltip formatting with two decimal places
+                label += `${context.parsed.y.toFixed(2)} L`; 
               }
               return label;
             },
@@ -299,7 +271,7 @@ const CategoryWiseReport = () => {
     setFilter4(value);
     setActiveView4(value);
   };
-  //For Pdf Download
+  
   const [isDownloadPdfLoading, setIsDownloadPdfLoading] = useState(false);
 
   const handleDownloadPdf = () => {
@@ -400,10 +372,15 @@ const CategoryWiseReport = () => {
           />
         </div>
       )}
-
+   {isLoadingBookingData ? (
+        <div className="flex justify-center items-center h-64">
+          <Loader />
+        </div>
+      ) : (
       <div className=" my-4">
         <Bar ref={chartRef} plugins={[ChartDataLabels]} data={chartData4} options={chartOptions4} />
       </div>
+      )}
     </div>
   );
 };

@@ -238,7 +238,7 @@ const Filter = ({ isOpened, setShowFilter }) => {
       onClose={() => setShowFilter(false)}
     >
       <div className="w-full flex justify-end">
-        <Button onClick={handleResetParams} className="border-black text-black radius-md mr-3">
+        <Button onClick={handleResetParams} className="border-black text-black radius-md mr-3 bg-white">
           Reset
         </Button>
         <Button
