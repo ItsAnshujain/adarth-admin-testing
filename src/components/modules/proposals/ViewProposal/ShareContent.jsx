@@ -160,7 +160,7 @@ const ShareContent = ({
 
   const shareProposal = useShareProposal();
   const shareCustomProposal = useShareCustomProposal();
-  
+
   const handleActiveFileType = value => {
     let tempArr = [...activeFileType]; // TODO: use immmer
     if (tempArr.some(item => item === value)) {
@@ -176,15 +176,13 @@ const ShareContent = ({
     }
     setActiveFileType(tempArr);
   };
-  
+
   const handleActiveShare = value => setActiveShare(value);
   const shareInventory = useShareInventory();
-  
+
   const watchAspectRatio = form.watch('aspectRatio');
-  
 
   const onSubmit = form.handleSubmit(async formData => {
-  
     const data = { ...formData, clientCompanyName: formData.clientCompany || undefined };
     if (!activeFileType.length) {
       showNotification({
@@ -204,17 +202,23 @@ const ShareContent = ({
       templateType: 'generic',
       inventoryIds: selectedInventoryIds,
     };
-    console.log("Payload for shareInventory:", data1);
+    console.log('Payload for shareInventory:', data1);
 
     data.format = activeFileType.join(',');
     data.shareVia = activeShare;
     data.aspectRatio = 'fill';
     data.templateType = 'generic';
-
+    console.log('temple', data1.templateType);
     if (watchAspectRatio) {
       if (templateType != 'custom') {
         data.aspectRatio = aspectRatio;
         data.templateType = templateType;
+        data1.aspectRatio = aspectRatio;
+        data1.templateType = templateType;
+      }
+      if (templateType == 'custom') {
+        data1.aspectRatio = aspectRatio;
+        data1.templateType = templateType;
       }
     }
 
@@ -322,37 +326,64 @@ const ShareContent = ({
       searchParamQueries.forEach((value, key) => {
         params[key] = value;
       });
+      if (templateType != 'custom') {
+        const inventoryResponse = await shareInventory.mutateAsync(
+          { queries: serialize({ ...params, utcOffset: dayjs().utcOffset() }), data },
+          {
+            onSuccess: () => {
+              setActiveFileType([]);
+              if (data.shareVia !== 'copy_link') {
+                showNotification({
+                  title: 'Inventories have been shared successfully',
+                  color: 'green',
+                });
+              }
 
-      const inventoryResponse = await shareInventory.mutateAsync(
-        { queries: serialize({ ...params, utcOffset: dayjs().utcOffset() }), data1 },
-        {
-          onSuccess: () => {
-            setActiveFileType([]);
-            if (data1.shareVia !== 'copy_link') {
-              showNotification({
-                title: 'Inventories have been shared successfully',
-                color: 'green',
-              });
-            }
-
-            form.reset();
-            setActiveShare('');
-            onClose();
+              form.reset();
+              setActiveShare('');
+              onClose();
+            },
           },
-        },
-      );
-      if (activeShare === 'copy_link' && inventoryResponse?.proposalShare?.messageText) {
-        navigator.clipboard.writeText(inventoryResponse?.proposalShare?.messageText);
-        showNotification({
-          title: 'Link Copied',
-          color: 'blue',
-        });
+        );
+        if (activeShare === 'copy_link' && inventoryResponse?.proposalShare?.messageText) {
+          navigator.clipboard.writeText(inventoryResponse?.proposalShare?.messageText);
+          showNotification({
+            title: 'Link Copied',
+            color: 'blue',
+          });
+        }
+      }
+      if (templateType == 'custom') {
+        const inventoryResponse = await shareCustomProposal.mutateAsync(
+          { selectedInventoryIds, queries: serialize({ utcOffset: dayjs().utcOffset() }), data: data1 },
+          {
+            onSuccess: () => {
+              setActiveFileType([]);
+              if (data1.shareVia !== 'copy_link') {
+                showNotification({
+                  title: 'Inventories have been shared successfully',
+                  color: 'green',
+                });
+              }
+
+              form.reset();
+              setActiveShare('');
+              onClose();
+            },
+          },
+        );
+        if (activeShare === 'copy_link' && inventoryResponse?.proposalShare?.messageText) {
+          navigator.clipboard.writeText(inventoryResponse?.proposalShare?.messageText);
+          showNotification({
+            title: 'Link Copied',
+            color: 'blue',
+          });
+        }
       }
     }
   });
 
   const handleDownload = form.handleSubmit(async formData => {
-   
     if (!activeFileType.length) {
       showNotification({
         title: 'Please select a file type to continue',
@@ -391,6 +422,12 @@ const ShareContent = ({
       if (templateType != 'custom') {
         data.aspectRatio = aspectRatio;
         data.templateType = templateType;
+        data1.aspectRatio = aspectRatio;
+        data1.templateType = templateType;
+      }
+      if (templateType == 'custom') {
+        data1.aspectRatio = aspectRatio;
+        data1.templateType = templateType;
       }
     }
 
@@ -443,13 +480,35 @@ const ShareContent = ({
 
     if (shareType === 'inventory') {
       const params = {};
-      
+
       searchParamQueries.forEach((value, key) => {
         params[key] = value;
       });
-
+      if (templateType != 'custom') {
       const inventoryResponse = await shareInventory.mutateAsync(
-        { queries: serialize({ ...params, page: 1, utcOffset: dayjs().utcOffset() }), data:data1 },
+        { queries: serialize({ ...params, page: 1, utcOffset: dayjs().utcOffset() }), data },
+        {
+          onSuccess: () => {
+            setActiveFileType([]);
+            onClose();
+            setLoaderType(-1);
+          },
+          onError: () => {
+            setLoaderType(-1);
+          },
+        },
+      );
+      if (inventoryResponse[data.format]) {
+        downloadPdf(inventoryResponse[data.format]);
+        showNotification({
+          title: 'Download successful',
+          color: 'green',
+        });
+      }
+    }
+      if (templateType == 'custom') {
+      const inventoryResponse = await shareCustomProposal.mutateAsync(
+        {selectedInventoryIds, queries: serialize({ ...params, page: 1, utcOffset: dayjs().utcOffset() }), data: data1 },
         {
           onSuccess: () => {
             setActiveFileType([]);
@@ -468,7 +527,7 @@ const ShareContent = ({
           color: 'green',
         });
       }
-
+    }
     }
   });
 

@@ -44,6 +44,8 @@ import VacantInventoryFilter from '../../components/modules/inventory/VacantInve
 import { DATE_FORMAT } from '../../utils/constants';
 import InventoryPreviewImage from '../../components/shared/InventoryPreviewImage';
 import { useFormContext } from 'react-hook-form';
+import { useQueryClient } from '@tanstack/react-query';
+import useUserStore from '../../store/user.store';
 
 dayjs.extend(isBetween);
 
@@ -61,6 +63,7 @@ const InventoryDashboardPage = () => {
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch] = useDebouncedValue(searchInput, 800);
   const modals = useModals();
+  const userId = useUserStore(state => state.id);
   const form = useForm({ initialValues: { spaces: [] } });
   const viewType = useLayoutView(state => state.activeLayout);
   const { activeLayout, setActiveLayout } = useLayoutView(
@@ -85,6 +88,8 @@ const InventoryDashboardPage = () => {
     useDeleteInventory();
   const [selectedCards, setSelectedCards] = useState([]);
 
+  const queryClient = useQueryClient();
+  const userData = queryClient.getQueryData(['users-by-id', userId]);
   const { mutate: update, isLoading: isUpdateInventoryLoading } = useUpdateInventories();
 
   const page = searchParams.get('page');
@@ -446,6 +451,7 @@ const InventoryDashboardPage = () => {
           selectedInventoryIds={selectedInventoryIds}
           searchParamQueries={searchParams}
           onClose={() => modals.closeModal('shareInventoryOption')}
+          userData={userData} 
         />
       ),
       ...modalConfig,

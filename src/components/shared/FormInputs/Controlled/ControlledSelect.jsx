@@ -11,12 +11,11 @@ const ControlledSelect = ({ name, userData, ...props }) => {
 
   // Filter options based on the presence of a special user
   const filteredOptions = props.data.filter(option => {
-    if (userData?.company==='Sri Garima Publicity' || userData?.role==='admin') {
+    if (userData?.company==='Sri Garima Publicity' || userData?.role==='admin' ) {
       return true;
     }
     return option.value !== 'fill;custom'; 
   });
-
 
   return (
     <Select
