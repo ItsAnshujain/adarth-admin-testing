@@ -326,9 +326,8 @@ const ShareContent = ({
       searchParamQueries.forEach((value, key) => {
         params[key] = value;
       });
-      if (templateType != 'custom') {
         const inventoryResponse = await shareInventory.mutateAsync(
-          { queries: serialize({ ...params, utcOffset: dayjs().utcOffset() }), data },
+          { queries: serialize({ ...params, utcOffset: dayjs().utcOffset() }), data:data1 },
           {
             onSuccess: () => {
               setActiveFileType([]);
@@ -352,34 +351,6 @@ const ShareContent = ({
             color: 'blue',
           });
         }
-      }
-      if (templateType == 'custom') {
-        const inventoryResponse = await shareCustomProposal.mutateAsync(
-          { selectedInventoryIds, queries: serialize({ utcOffset: dayjs().utcOffset() }), data: data1 },
-          {
-            onSuccess: () => {
-              setActiveFileType([]);
-              if (data1.shareVia !== 'copy_link') {
-                showNotification({
-                  title: 'Inventories have been shared successfully',
-                  color: 'green',
-                });
-              }
-
-              form.reset();
-              setActiveShare('');
-              onClose();
-            },
-          },
-        );
-        if (activeShare === 'copy_link' && inventoryResponse?.proposalShare?.messageText) {
-          navigator.clipboard.writeText(inventoryResponse?.proposalShare?.messageText);
-          showNotification({
-            title: 'Link Copied',
-            color: 'blue',
-          });
-        }
-      }
     }
   });
 
@@ -484,31 +455,8 @@ const ShareContent = ({
       searchParamQueries.forEach((value, key) => {
         params[key] = value;
       });
-      if (templateType != 'custom') {
       const inventoryResponse = await shareInventory.mutateAsync(
-        { queries: serialize({ ...params, page: 1, utcOffset: dayjs().utcOffset() }), data },
-        {
-          onSuccess: () => {
-            setActiveFileType([]);
-            onClose();
-            setLoaderType(-1);
-          },
-          onError: () => {
-            setLoaderType(-1);
-          },
-        },
-      );
-      if (inventoryResponse[data.format]) {
-        downloadPdf(inventoryResponse[data.format]);
-        showNotification({
-          title: 'Download successful',
-          color: 'green',
-        });
-      }
-    }
-      if (templateType == 'custom') {
-      const inventoryResponse = await shareCustomProposal.mutateAsync(
-        {selectedInventoryIds, queries: serialize({ ...params, page: 1, utcOffset: dayjs().utcOffset() }), data: data1 },
+        { queries: serialize({ ...params, page: 1, utcOffset: dayjs().utcOffset() }), data:data1 },
         {
           onSuccess: () => {
             setActiveFileType([]);
@@ -527,7 +475,6 @@ const ShareContent = ({
           color: 'green',
         });
       }
-    }
     }
   });
 
